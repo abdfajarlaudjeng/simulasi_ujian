@@ -23,10 +23,6 @@
 .nomor-soal:hover {filter: brightness(0.9);}
 .nomor-soal.active {background-color:#1e3a8a;color:white;}
 .nomor-soal.answered {background-color:#16a34a;color:white;}
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:50;justify-content:center;align-items:center;}
-.modal-content{background:white;padding:20px;border-radius:10px;max-height:80vh;overflow-y:auto;width:90%;max-width:600px;}
-.correct{background-color:#16a34a;color:white;padding:4px 6px;border-radius:4px;margin-top:2px;}
-.wrong{background-color:#dc2626;color:white;padding:4px 6px;border-radius:4px;margin-top:2px;}
 </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col font-sans">
@@ -42,6 +38,7 @@
 <div class="flex-1 lg:pr-6 border-gray-200">
 <p id="timer" class="text-center text-red-600 font-semibold mb-4 hidden"></p>
 
+<!-- LOGIN SECTION -->
 <div id="loginSection" class="text-center">
 <h2 class="text-xl font-semibold mb-3">Masuk untuk Mulai Ujian</h2>
 <div class="max-w-xs mx-auto">
@@ -52,6 +49,7 @@
 </div>
 </div>
 
+<!-- UJIAN SECTION -->
 <div id="ujianSection" class="hidden">
 <div id="soalContainer" class="mb-6"></div>
 <div class="flex justify-between mt-4">
@@ -62,6 +60,7 @@
 </div>
 </div>
 
+<!-- NOMOR SOAL -->
 <div id="panelNomor" class="lg:w-1/4 border-t lg:border-t-0 lg:border-l mt-6 lg:mt-0 lg:pl-4 hidden">
 <h2 class="text-lg font-semibold mb-3">Nomor Soal</h2>
 <div id="nomorContainer" class="flex flex-wrap"></div>
@@ -69,46 +68,39 @@
 </div>
 </main>
 
-<footer class="bg-[#1e3a8a] text-gray-200 text-center text-sm py-4">© 2025 Ujian Online Informatika</footer>
-
-<!-- Modal Hasil -->
-<div id="hasilModal" class="modal-bg flex">
-<div class="modal-content text-center">
-<h2 class="text-lg font-semibold mb-3">Hasil Ujian</h2>
-<div id="hasilDetail" class="text-left mb-4"></div>
-<button onclick="kirimHasil()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full">Kirim Hasil ke Google Sheet</button>
-</div>
-</div>
+<footer class="bg-[#1e3a8a] text-gray-200 text-center text-sm py-4">
+© 2025 Ujian Online Informatika
+</footer>
 
 <script>
-const scriptURL="https://script.google.com/macros/s/AKfycbz0EBdzntTktSZrJgpTq7FTCC9fw7GnAcdAVB0u_VVefs1iqidee3A4l0lzr4yGzDPJTw/exec";
-let soalData=[],jawaban={},nama="",kelas="",currentSoal=0;
-let waktuTersisa=60*60,timerInterval;
+const scriptURL = "https://script.google.com/macros/s/AKfycbz0EBdzntTktSZrJgpTq7FTCC9fw7GnAcdAVB0u_VVefs1iqidee3A4l0lzr4yGzDPJTw/exec";
+let soalData = [], jawaban = {}, nama = "", kelas = "", currentSoal = 0;
+let waktuTersisa = 60 * 60, timerInterval;
 
 async function mulaiUjian(){
-  nama=document.getElementById("nama").value.trim();
-  kelas=document.getElementById("kelas").value.trim();
-  const tokenInput=document.getElementById("token").value.trim();
-  if(!nama||!kelas||!tokenInput) return alert("Harap isi semua kolom");
+  nama = document.getElementById("nama").value.trim();
+  kelas = document.getElementById("kelas").value.trim();
+  const tokenInput = document.getElementById("token").value.trim();
+  if(!nama || !kelas || !tokenInput) return alert("Harap isi semua kolom");
 
-  const resToken=await fetch(`${scriptURL}?action=cekToken&token=${tokenInput}`);
-  const dataToken=await resToken.json();
+  const resToken = await fetch(`${scriptURL}?action=cekToken&token=${tokenInput}`);
+  const dataToken = await resToken.json();
   if(!dataToken.valid) return alert("Token salah!");
 
-  localStorage.setItem("nama",nama);
-  localStorage.setItem("kelas",kelas);
+  localStorage.setItem("nama", nama);
+  localStorage.setItem("kelas", kelas);
 
   document.getElementById("loginSection").classList.add("hidden");
   document.getElementById("ujianSection").classList.remove("hidden");
   document.getElementById("panelNomor").classList.remove("hidden");
   document.getElementById("timer").classList.remove("hidden");
 
-  const res=await fetch(`${scriptURL}?action=getSoal`);
-  soalData=(await res.json()).questions.sort(()=>Math.random()-0.5);
+  const res = await fetch(`${scriptURL}?action=getSoal`);
+  soalData = (await res.json()).questions.sort(() => Math.random() - 0.5);
 
-  jawaban=JSON.parse(localStorage.getItem("jawaban")||"{}");
-  const savedTime=localStorage.getItem("waktuTersisa");
-  if(savedTime) waktuTersisa=parseInt(savedTime);
+  jawaban = JSON.parse(localStorage.getItem("jawaban") || "{}");
+  const savedTime = localStorage.getItem("waktuTersisa");
+  if(savedTime) waktuTersisa = parseInt(savedTime);
 
   tampilkanNomorSoal();
   tampilkanSoal(currentSoal);
@@ -116,119 +108,111 @@ async function mulaiUjian(){
 }
 
 function tampilkanNomorSoal(){
-  const container=document.getElementById("nomorContainer");
-  container.innerHTML="";
-  soalData.forEach((_,i)=>{
-    const div=document.createElement("div");
-    div.textContent=i+1;
-    div.className="nomor-soal";
-    div.onclick=()=>tampilkanSoal(i);
+  const container = document.getElementById("nomorContainer");
+  container.innerHTML = "";
+  soalData.forEach((_, i) => {
+    const div = document.createElement("div");
+    div.textContent = i + 1;
+    div.className = "nomor-soal";
+    div.onclick = () => tampilkanSoal(i);
     container.appendChild(div);
   });
   updateNomorStatus();
 }
 
 function tampilkanSoal(i){
-  currentSoal=i;
-  const s=soalData[i];
-  const c=document.getElementById("soalContainer");
-  c.innerHTML=`<p class="font-semibold mb-2">Soal ${i+1} dari ${soalData.length}</p>
-  <p class="mb-4">${s.soal}</p>
-  ${s.pilihan.map((p,idx)=>`<label class="block mb-2"><input type="radio" name="soal${i}" value="${p}" ${jawaban[i]===p?"checked":""} onchange="pilihJawaban(${i},'${p}')"> ${String.fromCharCode(65+idx)}. ${p}</label>`).join("")}`;
+  currentSoal = i;
+  const s = soalData[i];
+  const c = document.getElementById("soalContainer");
+  c.innerHTML = `
+    <p class="font-semibold mb-2">Soal ${i+1} dari ${soalData.length}</p>
+    <p class="mb-4">${s.soal}</p>
+    ${s.pilihan.map((p, idx) => `
+      <label class="block mb-2">
+        <input type="radio" name="soal${i}" value="${p}" ${jawaban[i]===p?"checked":""} onchange="pilihJawaban(${i},'${p}')">
+        ${String.fromCharCode(65+idx)}. ${p}
+      </label>`).join("")}
+  `;
   updateNomorStatus();
 }
 
-function pilihJawaban(i,val){
-  jawaban[i]=val;
-  localStorage.setItem("jawaban",JSON.stringify(jawaban));
+function pilihJawaban(i, val){
+  jawaban[i] = val;
+  localStorage.setItem("jawaban", JSON.stringify(jawaban));
   updateNomorStatus();
 }
 
-function prevSoal(){if(currentSoal>0)tampilkanSoal(currentSoal-1);}
-function nextSoal(){if(currentSoal<soalData.length-1)tampilkanSoal(currentSoal+1);}
+function prevSoal(){ if(currentSoal > 0) tampilkanSoal(currentSoal - 1); }
+function nextSoal(){ if(currentSoal < soalData.length - 1) tampilkanSoal(currentSoal + 1); }
 
 function updateNomorStatus(){
-  document.querySelectorAll(".nomor-soal").forEach((b,i)=>{
+  document.querySelectorAll(".nomor-soal").forEach((b, i) => {
     b.classList.remove("active");
     if(jawaban[i]) {
       b.classList.add("answered");
-      b.style.backgroundColor="#16a34a";
-      b.style.color="white";
+      b.style.backgroundColor = "#16a34a";
+      b.style.color = "white";
     } else {
-      b.style.backgroundColor="white";
-      b.style.color="#1e3a8a";
+      b.style.backgroundColor = "white";
+      b.style.color = "#1e3a8a";
     }
-    if(i===currentSoal)b.classList.add("active");
+    if(i === currentSoal) b.classList.add("active");
   });
 }
 
 function mulaiTimer(){
   clearInterval(timerInterval);
-  timerInterval=setInterval(()=>{
+  timerInterval = setInterval(() => {
     waktuTersisa--;
-    localStorage.setItem("waktuTersisa",waktuTersisa);
-    const menit=Math.floor(waktuTersisa/60);
-    const detik=waktuTersisa%60;
-    document.getElementById("timer").textContent=`⏰ Sisa waktu: ${menit}:${detik.toString().padStart(2,"0")}`;
-    if(waktuTersisa<=0){
+    localStorage.setItem("waktuTersisa", waktuTersisa);
+    const menit = Math.floor(waktuTersisa / 60);
+    const detik = waktuTersisa % 60;
+    document.getElementById("timer").textContent = `⏰ Sisa waktu: ${menit}:${detik.toString().padStart(2, "0")}`;
+    if(waktuTersisa <= 0){
       clearInterval(timerInterval);
       alert("Waktu habis! Jawaban otomatis dikirim.");
       selesaiUjian(true);
     }
-  },1000);
+  }, 1000);
 }
 
-function selesaiUjian(auto=false){
+async function selesaiUjian(auto = false){
   const totalSoal = soalData.length;
   const belumDiisi = [];
-  for(let i=0;i<totalSoal;i++){
-    if(!jawaban[i]) belumDiisi.push(i+1);
+  for(let i = 0; i < totalSoal; i++){
+    if(!jawaban[i]) belumDiisi.push(i + 1);
   }
-  if(!auto && belumDiisi.length>0){
+  if(!auto && belumDiisi.length > 0){
     alert("Anda belum menjawab soal nomor: " + belumDiisi.join(", "));
     return;
   }
 
-  // Hitung skor dan buat detail per soal
-  let skor=0;
-  const detailContainer=document.getElementById("hasilDetail");
-  detailContainer.innerHTML="";
-  soalData.forEach((s,i)=>{
+  let skor = 0;
+  soalData.forEach((s, i) => {
     const benar = s.kunci.trim().toLowerCase();
-    const jaw = (jawaban[i]||"").trim().toLowerCase();
-    const div=document.createElement("div");
-    div.innerHTML=`<p><strong>Soal ${i+1}:</strong> ${s.soal}</p>
-                   <p>Jawaban Anda: ${jawaban[i]||"-"}</p>
-                   <p>Jawaban Benar: ${s.kunci}</p>`;
-    div.className = jaw===benar?"correct":"wrong";
-    detailContainer.appendChild(div);
-    if(jaw===benar) skor++;
+    const jaw = (jawaban[i] || "").trim().toLowerCase();
+    if(jaw === benar) skor++;
   });
 
-  document.getElementById("hasilModal").style.display="flex";
-  document.getElementById("hasilModal").setAttribute("data-skor",skor);
-}
-
-async function kirimHasil(){
-  const skor = document.getElementById("hasilModal").getAttribute("data-skor");
-  const data=new FormData();
-  data.append("action","submitJawaban");
-  data.append("nama",nama);
-  data.append("kelas",kelas);
-  data.append("skor",skor);
+  // Kirim otomatis tanpa popup
+  const data = new FormData();
+  data.append("action", "submitJawaban");
+  data.append("nama", nama);
+  data.append("kelas", kelas);
+  data.append("skor", skor);
   data.append("jawaban", JSON.stringify(jawaban));
   data.append("waktuSelesai", new Date().toISOString());
 
-  await fetch(scriptURL,{method:"POST",body:data});
+  await fetch(scriptURL, { method: "POST", body: data });
   localStorage.clear();
-  alert(`Hasil berhasil dikirim! Skor: ${skor}/${soalData.length}`);
+  alert(`Ujian selesai!\nSkor Anda: ${skor}/${soalData.length}\nHasil telah dikirim ke Google Sheet.`);
   window.location.reload();
 }
 
-window.addEventListener("load",()=>{
-  if(localStorage.getItem("nama")&&localStorage.getItem("kelas")){
-    nama=localStorage.getItem("nama");
-    kelas=localStorage.getItem("kelas");
+window.addEventListener("load", () => {
+  if(localStorage.getItem("nama") && localStorage.getItem("kelas")){
+    nama = localStorage.getItem("nama");
+    kelas = localStorage.getItem("kelas");
     mulaiUjian();
   }
 });
