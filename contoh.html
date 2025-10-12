@@ -6,29 +6,27 @@
   <title>Ujian Online Informatika</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { background-color: #f3f4f6; }
     .nomor-soal {
       width: 36px; height: 36px;
       border-radius: 6px;
       display: flex; align-items: center; justify-content: center;
       margin: 3px; cursor: pointer;
-      border: 2px solid #3b82f6;
+      border: 2px solid #1e3a8a;
       transition: all 0.2s;
       font-size: 14px;
     }
     .nomor-soal:hover { background-color: #e0f2fe; }
-    .nomor-soal.active { background-color: #3b82f6; color: white; }
+    .nomor-soal.active { background-color: #1e3a8a; color: white; }
     .nomor-soal.answered { background-color: #16a34a; color: white; }
   </style>
 </head>
-
-<body class="min-h-screen flex flex-col font-sans">
+<body class="bg-gray-100 min-h-screen flex flex-col font-sans">
 
   <!-- HEADER -->
-  <header class="bg-[#001f3f] text-white py-4 shadow-md">
+  <header class="bg-[#1e3a8a] text-white py-4 shadow-md">
     <div class="max-w-6xl mx-auto text-center">
       <h1 class="text-xl sm:text-2xl font-bold">Ujian Online Informatika SMP</h1>
-      <p class="text-sm sm:text-base text-blue-100">🔒 Sistem Ujian Aman dengan Token & Rekap Otomatis</p>
+      <p class="text-sm sm:text-base text-blue-100">Sistem Penilaian Otomatis - Disimpan ke Google Spreadsheet</p>
     </div>
   </header>
 
@@ -41,18 +39,15 @@
 
         <!-- FORM LOGIN -->
         <div id="loginSection" class="text-center">
-          <h2 class="text-xl font-semibold mb-3">Masukkan Data Ujian</h2>
+          <h2 class="text-xl font-semibold mb-3">Masuk untuk Mulai Ujian</h2>
           <div class="max-w-xs mx-auto">
-            <label class="block mb-1 text-left text-sm">Nama:</label>
+            <label class="block mb-1 text-left">Nama:</label>
             <input id="nama" type="text" class="border rounded w-full p-2 mb-3 text-sm" placeholder="Masukkan nama Anda">
-
-            <label class="block mb-1 text-left text-sm">Kelas:</label>
+            <label class="block mb-1 text-left">Kelas:</label>
             <input id="kelas" type="text" class="border rounded w-full p-2 mb-3 text-sm" placeholder="Masukkan kelas Anda">
-
-            <label class="block mb-1 text-left text-sm">Token Ujian:</label>
-            <input id="token" type="password" class="border rounded w-full p-2 mb-3 text-sm" placeholder="Masukkan token dari guru">
-
-            <button onclick="cekToken()" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded w-full text-sm font-semibold">Mulai Ujian</button>
+            <label class="block mb-1 text-left">🔒 Token Ujian:</label>
+            <input id="token" type="text" class="border rounded w-full p-2 mb-4 text-sm" placeholder="Masukkan token ujian">
+            <button onclick="mulaiUjian()" class="bg-[#1e3a8a] hover:bg-blue-900 text-white px-4 py-2 rounded w-full text-sm">Mulai Ujian</button>
           </div>
         </div>
 
@@ -61,9 +56,9 @@
           <div id="soalContainer" class="mb-6"></div>
           <div class="flex justify-between mt-4">
             <button id="prevBtn" onclick="prevSoal()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded text-sm">Sebelumnya</button>
-            <button id="nextBtn" onclick="nextSoal()" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded text-sm">Selanjutnya</button>
+            <button id="nextBtn" onclick="nextSoal()" class="bg-[#1e3a8a] hover:bg-blue-900 text-white px-4 py-2 rounded text-sm">Selanjutnya</button>
           </div>
-          <button onclick="selesaiUjian()" class="mt-6 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full text-sm font-semibold">Selesai Ujian</button>
+          <button onclick="selesaiUjian()" class="mt-6 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full text-sm">Selesai Ujian</button>
         </div>
       </div>
 
@@ -76,7 +71,7 @@
   </main>
 
   <!-- FOOTER -->
-  <footer class="bg-[#001f3f] text-gray-200 text-center text-sm py-4">
+  <footer class="bg-[#1e3a8a] text-gray-200 text-center text-sm py-4">
     <p>© 2025 Ujian Online Informatika | Dikembangkan oleh Tim Guru SMP</p>
   </footer>
 
@@ -92,29 +87,19 @@
   </div>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxTMSLxZKs5D37LX78Fd1_DbfnOzdGFmNSgSxzOCIRwAjTmtqUcOCTSbMo5wYj_pz0VUw/exec";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxE5V0BEJu8M1gUpl-ZmkNYBxUGrMlO4-VTfdRiZx6sS41b3MnzBCCwm5IipX7pudpVbA/exec";
+    const tokenResmi = "UJIAN2025"; // Token ujian 🔒
     let soalData = [], jawaban = {}, nama = "", kelas = "", currentSoal = 0;
     let waktuTersisa = 30 * 60;
     let timerInterval;
 
-    async function cekToken() {
-      const token = document.getElementById("token").value.trim();
-      if (!token) return alert("Masukkan token ujian terlebih dahulu.");
-
-      const res = await fetch(`${scriptURL}?action=cekToken&token=${token}`);
-      const valid = await res.json();
-
-      if (valid.status === "ok") {
-        mulaiUjian();
-      } else {
-        alert("Token salah atau sudah kadaluarsa!");
-      }
-    }
-
     async function mulaiUjian() {
       nama = document.getElementById("nama").value.trim();
       kelas = document.getElementById("kelas").value.trim();
-      if (!nama || !kelas) return alert("Harap isi nama dan kelas.");
+      const tokenInput = document.getElementById("token").value.trim();
+
+      if (!nama || !kelas || !tokenInput) return alert("Harap isi semua kolom.");
+      if (tokenInput !== tokenResmi) return alert("Token salah! Hubungi guru pengawas.");
 
       localStorage.setItem("nama", nama);
       localStorage.setItem("kelas", kelas);
@@ -234,7 +219,7 @@
       window.location.reload();
     }
 
-    // AUTO RESUME
+    // Auto resume
     window.addEventListener("load", () => {
       if (localStorage.getItem("nama") && localStorage.getItem("kelas")) {
         nama = localStorage.getItem("nama");
