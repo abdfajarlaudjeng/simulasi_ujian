@@ -6,8 +6,21 @@
 <title>Simulasi Ujian Online Informatika</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-.nomor-soal {width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;margin:3px;cursor:pointer;border:2px solid #1e3a8a;transition:all 0.2s;font-size:14px;}
-.nomor-soal:hover {background-color:#e0f2fe;}
+.nomor-soal {
+  width:36px;height:36px;
+  border-radius:6px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:3px;
+  cursor:pointer;
+  border:2px solid #1e3a8a;
+  transition:all 0.2s;
+  font-size:14px;
+  background-color:white;
+  color:#1e3a8a;
+}
+.nomor-soal:hover {filter: brightness(0.9);}
 .nomor-soal.active {background-color:#1e3a8a;color:white;}
 .nomor-soal.answered {background-color:#16a34a;color:white;}
 </style>
@@ -124,18 +137,64 @@ function tampilkanSoal(i){
   updateNomorStatus();
 }
 
-function pilihJawaban(i,val){jawaban[i]=val;localStorage.setItem("jawaban",JSON.stringify(jawaban));updateNomorStatus();}
+function pilihJawaban(i,val){
+  jawaban[i]=val;
+  localStorage.setItem("jawaban",JSON.stringify(jawaban));
+  updateNomorStatus();
+}
+
 function prevSoal(){if(currentSoal>0)tampilkanSoal(currentSoal-1);}
 function nextSoal(){if(currentSoal<soalData.length-1)tampilkanSoal(currentSoal+1);}
-function updateNomorStatus(){document.querySelectorAll(".nomor-soal").forEach((b,i)=>{b.classList.remove("active","answered");if(i===currentSoal)b.classList.add("active");if(jawaban[i])b.classList.add("answered");});}
 
-function mulaiTimer(){clearInterval(timerInterval);timerInterval=setInterval(()=>{waktuTersisa--;localStorage.setItem("waktuTersisa",waktuTersisa);const menit=Math.floor(waktuTersisa/60);const detik=waktuTersisa%60;document.getElementById("timer").textContent=`⏰ Sisa waktu: ${menit}:${detik.toString().padStart(2,"0")}`;if(waktuTersisa<=0){clearInterval(timerInterval);alert("Waktu habis! Jawaban otomatis dikirim.");kirimHasil();}},1000);}
+function updateNomorStatus(){
+  document.querySelectorAll(".nomor-soal").forEach((b,i)=>{
+    b.classList.remove("active");
+    if(jawaban[i]) {
+      b.classList.add("answered");
+      b.style.backgroundColor="#16a34a"; // hijau jika sudah dijawab
+      b.style.color="white";
+    } else {
+      b.style.backgroundColor="white"; // putih jika belum dijawab
+      b.style.color="#1e3a8a";
+    }
+    if(i===currentSoal)b.classList.add("active");
+  });
+}
 
-function selesaiUjian(){document.getElementById("confirmModal").classList.remove("hidden");}
+function mulaiTimer(){
+  clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    waktuTersisa--;
+    localStorage.setItem("waktuTersisa",waktuTersisa);
+    const menit=Math.floor(waktuTersisa/60);
+    const detik=waktuTersisa%60;
+    document.getElementById("timer").textContent=`⏰ Sisa waktu: ${menit}:${detik.toString().padStart(2,"0")}`;
+    if(waktuTersisa<=0){
+      clearInterval(timerInterval);
+      alert("Waktu habis! Jawaban otomatis dikirim.");
+      kirimHasil(true);
+    }
+  },1000);
+}
+
+function selesaiUjian(){
+  const totalSoal = soalData.length;
+  const belumDiisi = [];
+  for(let i=0;i<totalSoal;i++){
+    if(!jawaban[i]) belumDiisi.push(i+1);
+  }
+  if(belumDiisi.length>0){
+    alert("Anda belum menjawab soal nomor: " + belumDiisi.join(", "));
+    return; // Tidak bisa lanjut
+  }
+  document.getElementById("confirmModal").classList.remove("hidden");
+}
+
 function tutupModal(){document.getElementById("confirmModal").classList.add("hidden");}
 
-async function kirimHasil(){
-  tutupModal();clearInterval(timerInterval);
+async function kirimHasil(auto=false){
+  tutupModal();
+  clearInterval(timerInterval);
   const waktuSelesai = new Date();
   let skor=0;
   soalData.forEach((s,i)=>{
@@ -156,7 +215,13 @@ async function kirimHasil(){
   window.location.reload();
 }
 
-window.addEventListener("load",()=>{if(localStorage.getItem("nama")&&localStorage.getItem("kelas")){nama=localStorage.getItem("nama");kelas=localStorage.getItem("kelas");mulaiUjian();}});
+window.addEventListener("load",()=>{
+  if(localStorage.getItem("nama")&&localStorage.getItem("kelas")){
+    nama=localStorage.getItem("nama");
+    kelas=localStorage.getItem("kelas");
+    mulaiUjian();
+  }
+});
 </script>
 </body>
 </html>
