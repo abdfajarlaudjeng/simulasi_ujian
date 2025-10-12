@@ -69,16 +69,6 @@
 
 <footer class="bg-[#1e3a8a] text-gray-200 text-center text-sm py-4">© 2025 Ujian Online Informatika</footer>
 
-<div id="confirmModal" class="hidden fixed inset-0 flex justify-center items-center bg-black/40 z-50">
-<div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
-<p class="text-lg mb-4">Apakah Anda yakin ingin mengirim hasil ujian?</p>
-<div class="flex justify-around">
-<button onclick="kirimHasil()" class="bg-green-600 text-white px-4 py-2 rounded">Ya</button>
-<button onclick="tutupModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Batal</button>
-</div>
-</div>
-</div>
-
 <script>
 const scriptURL="https://script.google.com/macros/s/AKfycbz07IZPCIfvN_47sAdAhMM8nFAjMOP2ivo2gN1OZrKTGfd1R7fHRlJZ3FfgSCISySxK6A/exec";
 let soalData=[],jawaban={},nama="",kelas="",currentSoal=0;
@@ -151,10 +141,10 @@ function updateNomorStatus(){
     b.classList.remove("active");
     if(jawaban[i]) {
       b.classList.add("answered");
-      b.style.backgroundColor="#16a34a"; // hijau jika sudah dijawab
+      b.style.backgroundColor="#16a34a";
       b.style.color="white";
     } else {
-      b.style.backgroundColor="white"; // putih jika belum dijawab
+      b.style.backgroundColor="white";
       b.style.color="#1e3a8a";
     }
     if(i===currentSoal)b.classList.add("active");
@@ -172,46 +162,42 @@ function mulaiTimer(){
     if(waktuTersisa<=0){
       clearInterval(timerInterval);
       alert("Waktu habis! Jawaban otomatis dikirim.");
-      kirimHasil(true);
+      selesaiUjian(true);
     }
   },1000);
 }
 
-function selesaiUjian(){
+async function selesaiUjian(auto=false){
+  // cek soal belum dijawab
   const totalSoal = soalData.length;
   const belumDiisi = [];
   for(let i=0;i<totalSoal;i++){
     if(!jawaban[i]) belumDiisi.push(i+1);
   }
-  if(belumDiisi.length>0){
+  if(!auto && belumDiisi.length>0){
     alert("Anda belum menjawab soal nomor: " + belumDiisi.join(", "));
-    return; // Tidak bisa lanjut
+    return;
   }
-  document.getElementById("confirmModal").classList.remove("hidden");
-}
 
-function tutupModal(){document.getElementById("confirmModal").classList.add("hidden");}
-
-async function kirimHasil(auto=false){
-  tutupModal();
-  clearInterval(timerInterval);
-  const waktuSelesai = new Date();
+  // Hitung skor
   let skor=0;
   soalData.forEach((s,i)=>{
     if(jawaban[i] && jawaban[i].trim().toLowerCase()===s.kunci.trim().toLowerCase()) skor++;
   });
 
+  alert(`Ujian selesai! Jumlah jawaban benar: ${skor}/${totalSoal}`);
+
+  // Kirim ke Google Sheet
   const data=new FormData();
   data.append("action","submitJawaban");
   data.append("nama",nama);
   data.append("kelas",kelas);
   data.append("skor",skor);
   data.append("jawaban", JSON.stringify(jawaban));
-  data.append("waktuSelesai", waktuSelesai.toISOString());
+  data.append("waktuSelesai", new Date().toISOString());
 
   await fetch(scriptURL,{method:"POST",body:data});
   localStorage.clear();
-  alert(`Ujian selesai! Skor Anda: ${skor}/${soalData.length}`);
   window.location.reload();
 }
 
