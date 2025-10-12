@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ujian Online Informatika</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans p-4">
+
+<div id="form-container" class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md">
+  <h1 class="text-xl font-bold mb-4 text-center">Formulir Ujian</h1>
+  <label class="block mb-2 font-semibold">Nama:</label>
+  <input id="nama" type="text" class="w-full p-2 border rounded mb-4">
+  <label class="block mb-2 font-semibold">Kelas:</label>
+  <input id="kelas" type="text" class="w-full p-2 border rounded mb-4">
+  <button onclick="mulaiUjian()" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Mulai Ujian</button>
+</div>
+
+<div id="ujian-container" class="hidden max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
+  <div id="timer" class="text-right text-sm font-bold text-red-600 mb-3"></div>
+  <form id="ujianForm" onsubmit="event.preventDefault(); konfirmasiSubmit();"></form>
+</div>
+
+<script>
+const scriptURL = "https://script.google.com/macros/s/AKfycbye6IpQMGJUXAdpGE_aL0bhCoWqx8LYJ7zxdAaA5UI0oEI2vS18F9FRP4wUCdybsc13dQ/exec"; 
+let examData = [];
+let answers = {};
+let timerInterval;
+
+async function mulaiUjian() {
+  const nama = document.getElementById("nama").value.trim();
+  const kelas = document.getElementById("kelas").value.trim();
+  if (!nama || !kelas) return alert("Isi nama dan kelas terlebih dahulu!");
+
+  document.getElementById("form-container").classList.add("hidden");
+  document.getElementById("ujian-container").classList.remove("hidden");
+
+  const res = await fetch(`${scriptURL}?action=getSoal`);
+  const data = await res.json();
+  examData = data.questions;
+
+  tampilkanSoal(examData);
+  mulaiTimer(15); // 15 menit
+}
+
+function tampilkanSoal(questions) {
+  const form = document.getElementById("ujianForm");
+  form.innerHTML = "";
+
+  questions.forEach((q, index) => {
+    const div = document.createElement("div");
+    div.className = "mb-4 border-b pb-2";
+    div.innerHTML = `
+      <p class="font-semibold mb-2">${index + 1}. ${q.soal}</p>
+      ${q.pilihan.map(p => `
+        <label class="block">
+          <input type="radio" name="q${index}" value="${p}" class="mr-2">
+          ${p}
+        </label>`).join("")}
+    `;
+    form.appendChild(div);
+  });
+
+  const submitBtn = document.createElement("button");
+  submitBtn.textContent = "Selesai Ujian";
+  submitBtn.className = "mt-4 w-full bg-green-600 text-white py-2 rounded hover:bg-green-700";
+  submitBtn.type = "submit";
+  form.appendChild(submitBtn);
+}
+
+function mulaiTimer(menit) {
+  let sisa = menit * 60;
+  const timer = document.getElementById("timer");
+  timerInterval = setInterval(() => {
+    const m = Math.floor(sisa / 60);
+    const s = sisa % 60;
+    timer.textContent = `Sisa waktu: ${m}:${s < 10 ? "0" : ""}${s}`;
+    if (sisa <= 0) {
+      clearInterval(timerInterval);
+      konfirmasiSubmit(true);
+    }
+    sisa--;
+  }, 1000);
+}
+
+function konfirmasiSubmit(auto = false) {
+  const yakin = auto || confirm("Apakah Anda yakin ingin mengirim jawaban?");
+  if (yakin) submitExam();
+}
+
+async function submitExam() {
+  clearInterval(timerInterval);
+  const nama = document.getElementById("nama").value;
+  const kelas = document.getElementById("kelas").value;
+
+  const formData = new FormData(document.getElementById("ujianForm"));
+  examData.forEach((q, i) => {
+    answers[`q${i}`] = formData.get(`q${i}`) || "";
+  });
+
+  let skor = 0;
+  examData.forEach((q, i) => {
+    if (answers[`q${i}`] === q.kunci) skor++;
+  });
+
+  const jawabanJSON = JSON.stringify(answers);
+  await fetch(scriptURL, {
+    method: "POST",
+    body: new URLSearchParams({
+      action: "submitJawaban",
+      nama,
+      kelas,
+      skor,
+      jawaban: jawabanJSON,
+    }),
+  });
+
+  alert(`Ujian selesai!\nNilai Anda: ${skor}/${examData.length}`);
+  location.reload();
+}
+
+// Cegah keluar sebelum submit
+window.addEventListener('beforeunload', (e) => {
+  if (Object.keys(answers).length < examData.length) {
+    e.preventDefault();
+    e.returnValue = 'Ujian Anda belum dikumpulkan. Yakin ingin keluar?';
+  }
+});
+</script>
+
+</body>
+</html>
