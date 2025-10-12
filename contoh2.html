@@ -67,7 +67,7 @@
 </div>
 
 <script>
-const scriptURL="https://script.google.com/macros/s/AKfycbxKlC-4IQg6Slv4eBfl2qmEc9Dme_2-bdvYfr6HofbEsQA7DlZmIkAPVjGFdW_4Fqvueg/exec";
+const scriptURL="https://script.google.com/macros/s/AKfycbzjZJf4K9fRQptucBlrw1ZWz9tg8OdJLJa4P9A0HQZ6YlPcu0ck5WqegxW80gogKxIaWw/exec";
 let soalData=[],jawaban={},nama="",kelas="",currentSoal=0;
 let waktuTersisa=60*60,timerInterval;
 
@@ -136,15 +136,20 @@ function tutupModal(){document.getElementById("confirmModal").classList.add("hid
 
 async function kirimHasil(){
   tutupModal();clearInterval(timerInterval);
-  let skor=0;soalData.forEach((s,i)=>{if(jawaban[i]&&jawaban[i].trim().toLowerCase()===s.kunci.trim().toLowerCase())skor++;});
-  
+  const waktuSelesai = new Date();
+  let skor=0;
+  soalData.forEach((s,i)=>{
+    if(jawaban[i] && jawaban[i].trim().toLowerCase()===s.kunci.trim().toLowerCase()) skor++;
+  });
+
   const data=new FormData();
   data.append("action","submitJawaban");
   data.append("nama",nama);
   data.append("kelas",kelas);
   data.append("skor",skor);
-  data.append("jawaban", JSON.stringify(jawaban)); // Simpan jawaban per soal
-  
+  data.append("jawaban", JSON.stringify(jawaban));
+  data.append("waktuSelesai", waktuSelesai.toISOString());
+
   await fetch(scriptURL,{method:"POST",body:data});
   localStorage.clear();
   alert(`Ujian selesai! Skor Anda: ${skor}/${soalData.length}`);
