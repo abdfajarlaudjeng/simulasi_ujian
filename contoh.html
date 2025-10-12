@@ -1,29 +1,59 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ujian Online Informatika</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .nomor-soal {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 4px;
+      cursor: pointer;
+      border: 2px solid #3b82f6;
+      transition: all 0.2s;
+    }
+    .nomor-soal:hover { background-color: #e0f2fe; }
+    .nomor-soal.active { background-color: #3b82f6; color: white; }
+    .nomor-soal.answered { background-color: #16a34a; color: white; }
+  </style>
 </head>
-<body class="bg-gray-100 p-6 font-sans">
+<body class="bg-gray-100 min-h-screen p-6 font-sans">
+  <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 flex flex-col lg:flex-row">
+    
+    <!-- Bagian kiri: Soal -->
+    <div class="flex-1 lg:pr-6 border-gray-200">
+      <h1 class="text-2xl font-bold text-center mb-4">Ujian Online Informatika</h1>
 
-  <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-    <h1 class="text-2xl font-bold text-center mb-4">Ujian Online Informatika</h1>
+      <div id="loginSection">
+        <label class="block mb-2">Nama:</label>
+        <input id="nama" type="text" class="border rounded w-full p-2 mb-3" placeholder="Masukkan nama Anda">
+        <label class="block mb-2">Kelas:</label>
+        <input id="kelas" type="text" class="border rounded w-full p-2 mb-3" placeholder="Masukkan kelas Anda">
+        <button onclick="mulaiUjian()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full">Mulai Ujian</button>
+      </div>
 
-    <div id="loginSection">
-      <label class="block mb-2">Nama:</label>
-      <input id="nama" type="text" class="border rounded w-full p-2 mb-3" placeholder="Masukkan nama Anda">
+      <div id="ujianSection" class="hidden">
+        <div id="soalContainer" class="mb-6"></div>
 
-      <label class="block mb-2">Kelas:</label>
-      <input id="kelas" type="text" class="border rounded w-full p-2 mb-3" placeholder="Masukkan kelas Anda">
+        <div class="flex justify-between mt-4">
+          <button id="prevBtn" onclick="prevSoal()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">Sebelumnya</button>
+          <button id="nextBtn" onclick="nextSoal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Selanjutnya</button>
+        </div>
 
-      <button onclick="mulaiUjian()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full">Mulai Ujian</button>
+        <button onclick="selesaiUjian()" class="mt-6 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full">Selesai Ujian</button>
+      </div>
     </div>
 
-    <div id="ujianSection" class="hidden">
-      <div id="soalContainer" class="mb-4"></div>
-      <button onclick="selesaiUjian()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full">Selesai Ujian</button>
+    <!-- Bagian kanan: Navigasi nomor soal -->
+    <div id="panelNomor" class="lg:w-1/4 border-t lg:border-t-0 lg:border-l mt-6 lg:mt-0 lg:pl-4 hidden">
+      <h2 class="text-lg font-semibold mb-3">Nomor Soal</h2>
+      <div id="nomorContainer" class="flex flex-wrap"></div>
     </div>
   </div>
 
@@ -39,10 +69,10 @@
   </div>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbw1uQsAHJalT-04Ng3GmQ-4DwWPKnac6gLM5mcJy68EE0q8CFBeSJ4dn0vYYRCpP0DoKA/exec"; // Ganti dengan URL Web App yang kamu deploy
+    const scriptURL = "https://script.google.com/macros/s/AKfycbzpTEj_3hVfxvquUmC0EJh7WIK1IrSQSaNNY6nYeO_8c1UIlJmj-EVPGYD4zpgcyH-IsA/exec";
     let soalData = [];
     let jawaban = {};
-    let nama = "", kelas = "";
+    let nama = "", kelas = "", currentSoal = 0;
 
     async function mulaiUjian() {
       nama = document.getElementById("nama").value.trim();
@@ -52,26 +82,62 @@
 
       document.getElementById("loginSection").classList.add("hidden");
       document.getElementById("ujianSection").classList.remove("hidden");
+      document.getElementById("panelNomor").classList.remove("hidden");
 
       const res = await fetch(`${scriptURL}?action=getSoal`);
-      soalData = await res.json();
+      soalData = (await res.json()).questions;
 
-      tampilkanSoal();
+      // acak urutan soal
+      soalData = soalData.sort(() => Math.random() - 0.5);
+      tampilkanNomorSoal();
+      tampilkanSoal(currentSoal);
     }
 
-    function tampilkanSoal() {
+    function tampilkanNomorSoal() {
+      const container = document.getElementById("nomorContainer");
+      container.innerHTML = "";
+      soalData.forEach((_, i) => {
+        const div = document.createElement("div");
+        div.textContent = i + 1;
+        div.className = "nomor-soal";
+        div.onclick = () => tampilkanSoal(i);
+        container.appendChild(div);
+      });
+      updateNomorStatus();
+    }
+
+    function tampilkanSoal(index) {
+      currentSoal = index;
       const container = document.getElementById("soalContainer");
-      container.innerHTML = soalData.map((soal, i) => `
-        <div class="mb-4 border-b pb-3">
-          <p class="font-semibold">${i + 1}. ${soal.pertanyaan}</p>
-          ${soal.pilihan.map((p, idx) => `
-            <label class="block">
-              <input type="radio" name="soal${i}" value="${String.fromCharCode(65 + idx)}" onchange="jawaban[${i}] = this.value">
-              ${String.fromCharCode(65 + idx)}. ${p}
-            </label>
-          `).join('')}
-        </div>
-      `).join('');
+      const soal = soalData[index];
+      container.innerHTML = `
+        <p class="font-semibold mb-2">Soal ${index + 1} dari ${soalData.length}</p>
+        <p class="mb-4">${soal.soal}</p>
+        ${soal.pilihan.map((p, idx) => `
+          <label class="block mb-2">
+            <input type="radio" name="soal${index}" value="${p}" ${jawaban[index] === p ? "checked" : ""} onchange="jawaban[${index}] = this.value; updateNomorStatus()">
+            ${String.fromCharCode(65 + idx)}. ${p}
+          </label>
+        `).join("")}
+      `;
+      updateNomorStatus();
+    }
+
+    function prevSoal() {
+      if (currentSoal > 0) tampilkanSoal(currentSoal - 1);
+    }
+
+    function nextSoal() {
+      if (currentSoal < soalData.length - 1) tampilkanSoal(currentSoal + 1);
+    }
+
+    function updateNomorStatus() {
+      const nomorBoxes = document.querySelectorAll(".nomor-soal");
+      nomorBoxes.forEach((box, i) => {
+        box.classList.remove("active", "answered");
+        if (i === currentSoal) box.classList.add("active");
+        if (jawaban[i]) box.classList.add("answered");
+      });
     }
 
     function selesaiUjian() {
@@ -86,22 +152,23 @@
       tutupModal();
       let skor = 0;
       soalData.forEach((soal, i) => {
-        if (jawaban[i] === soal.jawabanBenar) skor++;
+        if (jawaban[i] && jawaban[i].trim().toLowerCase() === soal.kunci.trim().toLowerCase()) skor++;
       });
 
-      const waktuSelesai = new Date().toLocaleString("id-ID");
-      const data = { action: "submitHasil", nama, kelas, skor, jawaban, waktuSelesai };
+      const data = new FormData();
+      data.append("action", "submitJawaban");
+      data.append("nama", nama);
+      data.append("kelas", kelas);
+      data.append("skor", skor);
+      data.append("jawaban", JSON.stringify(jawaban));
 
-      await fetch(scriptURL, {
-        method: "POST",
-        body: JSON.stringify(data)
-      });
+      await fetch(scriptURL, { method: "POST", body: data });
 
       alert(`Ujian selesai! Skor Anda: ${skor}/${soalData.length}`);
       window.location.reload();
     }
 
-    // Peringatan sebelum keluar halaman
+    // Peringatan keluar halaman
     window.addEventListener("beforeunload", (e) => {
       if (Object.keys(jawaban).length < soalData.length) {
         e.preventDefault();
