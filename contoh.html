@@ -6,98 +6,80 @@
 <title>Ujian Online Informatika</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-.nomor-soal {
-  width:36px; height:36px; border-radius:6px;
-  display:flex; align-items:center; justify-content:center;
-  margin:3px; cursor:pointer; border:2px solid #1e3a8a;
-  transition: all 0.2s; font-size:14px;
-}
-.nomor-soal:hover { background-color:#e0f2fe; }
-.nomor-soal.active { background-color:#1e3a8a; color:white; }
-.nomor-soal.answered { background-color:#16a34a; color:white; }
+.nomor-soal {width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;margin:3px;cursor:pointer;border:2px solid #1e3a8a;transition:all 0.2s;font-size:14px;}
+.nomor-soal:hover {background-color:#e0f2fe;}
+.nomor-soal.active {background-color:#1e3a8a;color:white;}
+.nomor-soal.answered {background-color:#16a34a;color:white;}
 </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col font-sans">
-
-<header class="bg-[#1e3a8a] text-white py-4 shadow-md">
-  <div class="max-w-6xl mx-auto text-center flex flex-col items-center">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Logo_Kemdikbud.svg/120px-Logo_Kemdikbud.svg.png" alt="Logo Sekolah" class="w-16 mb-2">
-    <h1 class="text-xl sm:text-2xl font-bold">Ujian Online Informatika SMP</h1>
-    <p class="text-sm sm:text-base text-blue-100">Sistem Penilaian Otomatis - Disimpan ke Google Spreadsheet</p>
-  </div>
+<header class="bg-[#1e3a8a] text-white py-4 shadow-md text-center">
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Logo_Kemdikbud.svg/120px-Logo_Kemdikbud.svg.png" class="w-16 mx-auto mb-2">
+<h1 class="text-xl sm:text-2xl font-bold">Ujian Online Informatika SMP</h1>
+<p class="text-sm sm:text-base text-blue-100">Sistem Penilaian Otomatis</p>
 </header>
 
 <main class="flex-grow p-4 sm:p-6">
 <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-4 sm:p-6 flex flex-col lg:flex-row">
 
-<!-- Bagian kiri -->
+<!-- Kiri -->
 <div class="flex-1 lg:pr-6 border-gray-200">
-  <p id="timer" class="text-center text-red-600 font-semibold mb-4 hidden"></p>
+<p id="timer" class="text-center text-red-600 font-semibold mb-4 hidden"></p>
 
-  <!-- LOGIN -->
-  <div id="loginSection" class="text-center">
-    <h2 class="text-xl font-semibold mb-3">Masuk untuk Mulai Ujian</h2>
-    <div class="max-w-xs mx-auto">
-      <label class="block mb-1 text-left">Nama:</label>
-      <input id="nama" type="text" class="border rounded w-full p-2 mb-3 text-sm" placeholder="Masukkan nama Anda">
-      <label class="block mb-1 text-left">Kelas:</label>
-      <input id="kelas" type="text" class="border rounded w-full p-2 mb-3 text-sm" placeholder="Masukkan kelas Anda">
-      <label class="block mb-1 text-left">🔒 Token Ujian:</label>
-      <input id="token" type="text" class="border rounded w-full p-2 mb-4 text-sm" placeholder="Masukkan token ujian">
-      <button onclick="mulaiUjian()" class="bg-[#1e3a8a] hover:bg-blue-900 text-white px-4 py-2 rounded w-full text-sm">Mulai Ujian</button>
-    </div>
-  </div>
-
-  <!-- UJIAN -->
-  <div id="ujianSection" class="hidden">
-    <div id="soalContainer" class="mb-6"></div>
-    <div class="flex justify-between mt-4">
-      <button id="prevBtn" onclick="prevSoal()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded text-sm">Sebelumnya</button>
-      <button id="nextBtn" onclick="nextSoal()" class="bg-[#1e3a8a] hover:bg-blue-900 text-white px-4 py-2 rounded text-sm">Selanjutnya</button>
-    </div>
-    <button onclick="selesaiUjian()" class="mt-6 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full text-sm">Selesai Ujian</button>
-  </div>
+<div id="loginSection" class="text-center">
+<h2 class="text-xl font-semibold mb-3">Masuk untuk Mulai Ujian</h2>
+<div class="max-w-xs mx-auto">
+<label>Nama:</label><input id="nama" class="border rounded w-full p-2 mb-3 text-sm" placeholder="Nama">
+<label>Kelas:</label><input id="kelas" class="border rounded w-full p-2 mb-3 text-sm" placeholder="Kelas">
+<label>Token:</label><input id="token" class="border rounded w-full p-2 mb-4 text-sm" placeholder="Token">
+<button onclick="mulaiUjian()" class="bg-[#1e3a8a] hover:bg-blue-900 text-white px-4 py-2 rounded w-full text-sm">Mulai Ujian</button>
+</div>
 </div>
 
-<!-- Bagian kanan -->
+<div id="ujianSection" class="hidden">
+<div id="soalContainer" class="mb-6"></div>
+<div class="flex justify-between mt-4">
+<button onclick="prevSoal()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded text-sm">Sebelumnya</button>
+<button onclick="nextSoal()" class="bg-[#1e3a8a] hover:bg-blue-900 text-white px-4 py-2 rounded text-sm">Selanjutnya</button>
+</div>
+<button onclick="selesaiUjian()" class="mt-6 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full text-sm">Selesai Ujian</button>
+</div>
+</div>
+
+<!-- Kanan -->
 <div id="panelNomor" class="lg:w-1/4 border-t lg:border-t-0 lg:border-l mt-6 lg:mt-0 lg:pl-4 hidden">
-  <h2 class="text-lg font-semibold mb-3">Nomor Soal</h2>
-  <div id="nomorContainer" class="flex flex-wrap"></div>
+<h2 class="text-lg font-semibold mb-3">Nomor Soal</h2>
+<div id="nomorContainer" class="flex flex-wrap"></div>
 </div>
-
 </div>
 </main>
 
-<footer class="bg-[#1e3a8a] text-gray-200 text-center text-sm py-4">
-<p>© 2025 Ujian Online Informatika | Dikembangkan oleh Tim Guru SMP</p>
-</footer>
+<footer class="bg-[#1e3a8a] text-gray-200 text-center text-sm py-4">© 2025 Ujian Online Informatika</footer>
 
-<!-- Modal Konfirmasi -->
 <div id="confirmModal" class="hidden fixed inset-0 flex justify-center items-center bg-black/40 z-50">
-  <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
-    <p class="text-lg mb-4">Apakah Anda yakin ingin mengirim hasil ujian?</p>
-    <div class="flex justify-around">
-      <button onclick="kirimHasil()" class="bg-green-600 text-white px-4 py-2 rounded">Ya</button>
-      <button onclick="tutupModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Batal</button>
-    </div>
-  </div>
+<div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
+<p class="text-lg mb-4">Apakah Anda yakin ingin mengirim hasil ujian?</p>
+<div class="flex justify-around">
+<button onclick="kirimHasil()" class="bg-green-600 text-white px-4 py-2 rounded">Ya</button>
+<button onclick="tutupModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Batal</button>
+</div>
+</div>
 </div>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbyQB_XmS2RjNRxgVUJVS6L8dS68zBi9ZxrIxCda6j6cvrHtSs514oAtNi7OEX_jteMCpA/exec";
-let soalData=[], jawaban={}, nama="", kelas="", currentSoal=0;
-let waktuTersisa = 60*60, timerInterval;
+const scriptURL="https://script.google.com/macros/s/AKfycbwzSQV9vCNbzVc4RFe-1rnpcoB_HWX7W_6u1oTWB7pFbw6J3f0AlvVKFW8VK2tPUvWTVQ/exec";
+let soalData=[],jawaban={},nama="",kelas="",currentSoal=0;
+let waktuTersisa=60*60,timerInterval;
 
 async function mulaiUjian(){
   nama=document.getElementById("nama").value.trim();
   kelas=document.getElementById("kelas").value.trim();
   const tokenInput=document.getElementById("token").value.trim();
-  if(!nama||!kelas||!tokenInput) return alert("Harap isi semua kolom.");
+  if(!nama||!kelas||!tokenInput) return alert("Harap isi semua kolom");
 
-  // VALIDASI TOKEN SERVER
   const resToken=await fetch(`${scriptURL}?action=cekToken&token=${tokenInput}`);
   const dataToken=await resToken.json();
-  if(!dataToken.valid) return alert("Token salah! Hubungi guru pengawas.");
+  if(!dataToken.valid) return alert("Token salah!");
 
   localStorage.setItem("nama",nama);
   localStorage.setItem("kelas",kelas);
@@ -110,10 +92,9 @@ async function mulaiUjian(){
   const res=await fetch(`${scriptURL}?action=getSoal`);
   soalData=(await res.json()).questions.sort(()=>Math.random()-0.5);
 
-  const savedJawaban=JSON.parse(localStorage.getItem("jawaban")||"{}");
+  jawaban=JSON.parse(localStorage.getItem("jawaban")||"{}");
   const savedTime=localStorage.getItem("waktuTersisa");
   if(savedTime) waktuTersisa=parseInt(savedTime);
-  jawaban=savedJawaban;
 
   tampilkanNomorSoal();
   tampilkanSoal(currentSoal);
@@ -135,91 +116,39 @@ function tampilkanNomorSoal(){
 
 function tampilkanSoal(i){
   currentSoal=i;
-  const soal=soalData[i];
-  const container=document.getElementById("soalContainer");
-  container.innerHTML=`
-    <p class="font-semibold mb-2">Soal ${i+1} dari ${soalData.length}</p>
-    <p class="mb-4">${soal.soal}</p>
-    ${soal.pilihan.map((p,idx)=>`
-      <label class="block mb-2">
-        <input type="radio" name="soal${i}" value="${p}" ${jawaban[i]===p?"checked":""} onchange="pilihJawaban(${i}, this.value)">
-        ${String.fromCharCode(65+idx)}. ${p}
-      </label>
-    `).join("")}
-  `;
-  updateNomorStatus();
-  container.scrollIntoView({behavior:"smooth",block:"start"});
-}
-
-function pilihJawaban(i,val){
-  jawaban[i]=val;
-  localStorage.setItem("jawaban",JSON.stringify(jawaban));
+  const s=soalData[i];
+  const c=document.getElementById("soalContainer");
+  c.innerHTML=`<p class="font-semibold mb-2">Soal ${i+1} dari ${soalData.length}</p>
+  <p class="mb-4">${s.soal}</p>
+  ${s.pilihan.map((p,idx)=>`<label class="block mb-2"><input type="radio" name="soal${i}" value="${p}" ${jawaban[i]===p?"checked":""} onchange="pilihJawaban(${i},'${p}')"> ${String.fromCharCode(65+idx)}. ${p}</label>`).join("")}`;
   updateNomorStatus();
 }
 
-function prevSoal(){if(currentSoal>0) tampilkanSoal(currentSoal-1);}
-function nextSoal(){if(currentSoal<soalData.length-1) tampilkanSoal(currentSoal+1);}
+function pilihJawaban(i,val){jawaban[i]=val;localStorage.setItem("jawaban",JSON.stringify(jawaban));updateNomorStatus();}
+function prevSoal(){if(currentSoal>0)tampilkanSoal(currentSoal-1);}
+function nextSoal(){if(currentSoal<soalData.length-1)tampilkanSoal(currentSoal+1);}
+function updateNomorStatus(){document.querySelectorAll(".nomor-soal").forEach((b,i)=>{b.classList.remove("active","answered");if(i===currentSoal)b.classList.add("active");if(jawaban[i])b.classList.add("answered");});}
 
-function updateNomorStatus(){
-  document.querySelectorAll(".nomor-soal").forEach((box,i)=>{
-    box.classList.remove("active","answered");
-    if(i===currentSoal) box.classList.add("active");
-    if(jawaban[i]) box.classList.add("answered");
-  });
-}
-
-function mulaiTimer(){
-  clearInterval(timerInterval);
-  timerInterval=setInterval(()=>{
-    waktuTersisa--;
-    localStorage.setItem("waktuTersisa",waktuTersisa);
-    const menit=String(Math.floor(waktuTersisa/60)).padStart(2,"0");
-    const detik=String(waktuTersisa%60).padStart(2,"0");
-    document.getElementById("timer").textContent=`⏰ Sisa waktu: ${menit}:${detik}`;
-    if(waktuTersisa<=0){
-      clearInterval(timerInterval);
-      alert("Waktu habis! Jawaban otomatis dikirim.");
-      kirimHasil();
-    }
-  },1000);
-}
+function mulaiTimer(){clearInterval(timerInterval);timerInterval=setInterval(()=>{waktuTersisa--;localStorage.setItem("waktuTersisa",waktuTersisa);const menit=Math.floor(waktuTersisa/60);const detik=waktuTersisa%60;document.getElementById("timer").textContent=`⏰ Sisa waktu: ${menit}:${detik.toString().padStart(2,"0")}`;if(waktuTersisa<=0){clearInterval(timerInterval);alert("Waktu habis! Jawaban otomatis dikirim.");kirimHasil();}},1000);}
 
 function selesaiUjian(){document.getElementById("confirmModal").classList.remove("hidden");}
 function tutupModal(){document.getElementById("confirmModal").classList.add("hidden");}
 
 async function kirimHasil(){
-  tutupModal();
-  clearInterval(timerInterval);
-
-  let skor=0;
-  soalData.forEach((soal,i)=>{
-    if(jawaban[i] && jawaban[i].trim().toLowerCase()===soal.kunci.trim().toLowerCase()) skor++;
-  });
-
+  tutupModal();clearInterval(timerInterval);
+  let skor=0;soalData.forEach((s,i)=>{if(jawaban[i]&&jawaban[i].trim().toLowerCase()===s.kunci.trim().toLowerCase())skor++;});
   const data=new FormData();
   data.append("action","submitJawaban");
   data.append("nama",nama);
   data.append("kelas",kelas);
   data.append("skor",skor);
-  data.append("jawaban",JSON.stringify(jawaban));
-  data.append("waktuSelesai",new Date().toISOString());
-
   await fetch(scriptURL,{method:"POST",body:data});
-
   localStorage.clear();
   alert(`Ujian selesai! Skor Anda: ${skor}/${soalData.length}`);
   window.location.reload();
 }
 
-// Resume otomatis
-window.addEventListener("load",()=>{
-  if(localStorage.getItem("nama") && localStorage.getItem("kelas")){
-    nama=localStorage.getItem("nama");
-    kelas=localStorage.getItem("kelas");
-    mulaiUjian();
-  }
-});
+window.addEventListener("load",()=>{if(localStorage.getItem("nama")&&localStorage.getItem("kelas")){nama=localStorage.getItem("nama");kelas=localStorage.getItem("kelas");mulaiUjian();}});
 </script>
-
 </body>
 </html>
