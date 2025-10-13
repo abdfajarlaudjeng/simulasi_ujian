@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kuis Informatika Interaktif</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+img.quiz-img {
+  max-width: 100%;
+  width: 16rem;
+  border-radius: 0.5rem;
+  margin-top: 0.75rem;
+  cursor: zoom-in;
+  transition: transform 0.2s;
+}
+@media (min-width: 640px) { img.quiz-img { width: 18rem; } }
+@media (min-width: 768px) { img.quiz-img { width: 20rem; } }
+img.quiz-img:hover { transform: scale(1.05); }
+
+#imgZoomModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+}
+#imgZoomModal img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 1rem;
+  box-shadow: 0 0 20px rgba(255,255,255,0.6);
+  cursor: zoom-out;
+}
+</style>
+</head>
+
+<body class="bg-gradient-to-br from-blue-50 to-gray-100 min-h-screen flex flex-col">
+
+<!-- === HEADER + NAVBAR === -->
+<header class="bg-blue-700 text-white shadow-lg sticky top-0 z-40">
+  <div class="max-w-6xl mx-auto flex items-center justify-between p-4">
+    <h1 class="text-lg sm:text-2xl font-bold">💻 Kuis Informatika Interaktif</h1>
+    <nav class="hidden sm:flex gap-6 font-medium">
+      <a href="#mainContainer" class="hover:text-yellow-300">Beranda</a>
+      <a href="#tentang" class="hover:text-yellow-300">Tentang</a>
+      <a href="#panduan" class="hover:text-yellow-300">Panduan</a>
+      <a href="#formIdentitas" class="bg-yellow-400 text-blue-900 px-3 py-1 rounded-md hover:bg-yellow-300">Mulai Kuis</a>
+    </nav>
+    <!-- Tombol Menu Mobile -->
+    <button id="menuBtn" class="sm:hidden focus:outline-none">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+           viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
+  </div>
+  <!-- Menu dropdown untuk mobile -->
+  <div id="mobileMenu" class="sm:hidden hidden flex-col bg-blue-600 text-white">
+    <a href="#mainContainer" class="px-4 py-2 hover:bg-blue-500">Beranda</a>
+    <a href="#tentang" class="px-4 py-2 hover:bg-blue-500">Tentang</a>
+    <a href="#panduan" class="px-4 py-2 hover:bg-blue-500">Panduan</a>
+    <a href="#formIdentitas" class="px-4 py-2 hover:bg-blue-500">Mulai Kuis</a>
+  </div>
+</header>
+
+<!-- === KONTEN UTAMA === -->
+<main class="flex-grow flex items-center justify-center p-3 sm:p-4">
+<div class="bg-white p-4 sm:p-6 md:p-8 rounded-3xl shadow-2xl w-full max-w-2xl md:max-w-3xl" id="mainContainer">
+
+  <h1 class="text-2xl sm:text-3xl font-bold text-center mb-5 text-blue-700">Selamat Datang di Kuis Informatika</h1>
+  <p class="text-gray-600 text-center mb-6 text-sm sm:text-base">Isilah identitas sekolah dan peserta sebelum memulai kuis.</p>
+
+  <!-- Form Identitas -->
+  <div id="formIdentitas" class="text-gray-800">
+    <h2 class="text-base sm:text-lg font-bold mb-3 text-blue-700">🧾 Identitas Sekolah</h2>
+    <label class="block mb-2 font-semibold text-sm sm:text-base">Nama Kabupaten:</label>
+    <input id="namaKabupaten" type="text" class="border border-gray-300 rounded-lg p-2 w-full mb-3 sm:mb-4 text-sm sm:text-base" placeholder="Contoh: Pemerintah Kabupaten Donggala">
+
+    <label class="block mb-2 font-semibold text-sm sm:text-base">Nama Sekolah:</label>
+    <input id="namaSekolah" type="text" class="border border-gray-300 rounded-lg p-2 w-full mb-3 sm:mb-4 text-sm sm:text-base" placeholder="Contoh: SMP Negeri 10 Banawa Selatan">
+
+    <label class="block mb-2 font-semibold text-sm sm:text-base">Alamat Sekolah:</label>
+    <input id="alamatSekolah" type="text" class="border border-gray-300 rounded-lg p-2 w-full mb-3 sm:mb-4 text-sm sm:text-base" placeholder="Contoh: Jl. PNPM Dusun Bambami, Desa Malino Kec. Banawa Selatan">
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
+      <div>
+        <label class="block mb-2 font-semibold text-sm sm:text-base">Logo Kabupaten:</label>
+        <input type="file" id="logoKab" accept="image/*" class="w-full border border-gray-300 rounded-lg p-2 text-sm sm:text-base">
+      </div>
+      <div>
+        <label class="block mb-2 font-semibold text-sm sm:text-base">Logo Sekolah:</label>
+        <input type="file" id="logoSek" accept="image/*" class="w-full border border-gray-300 rounded-lg p-2 text-sm sm:text-base">
+      </div>
+    </div>
+
+    <h2 class="text-base sm:text-lg font-bold mb-3 text-blue-700">👨‍🎓 Identitas Peserta</h2>
+    <label class="block mb-2 font-semibold text-sm sm:text-base">Nama Siswa:</label>
+    <input id="namaSiswa" type="text" class="border border-gray-300 rounded-lg p-2 w-full mb-3 sm:mb-4 text-sm sm:text-base">
+
+    <label class="block mb-2 font-semibold text-sm sm:text-base">Kelas:</label>
+    <input id="kelasSiswa" type="text" class="border border-gray-300 rounded-lg p-2 w-full mb-3 sm:mb-4 text-sm sm:text-base">
+
+    <label class="block mb-2 font-semibold text-sm sm:text-base">Guru Mata Pelajaran:</label>
+    <input id="namaGuru" type="text" class="border border-gray-300 rounded-lg p-2 w-full mb-3 sm:mb-4 text-sm sm:text-base">
+
+    <label class="block mb-2 font-semibold text-sm sm:text-base">Tanda Tangan Guru (PNG Transparan):</label>
+    <input type="file" id="ttdGuru" accept="image/png" class="w-full border border-gray-300 rounded-lg p-2 mb-5 sm:mb-6 text-sm sm:text-base">
+
+    <button onclick="mulaiKuis()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 text-sm sm:text-base">Mulai Kuis</button>
+  </div>
+
+  <!-- Kontainer Soal -->
+  <div id="kuisContainer" class="text-gray-800 hidden"></div>
+
+  <!-- Tombol Navigasi -->
+  <div id="navButtons" class="flex justify-between mt-5 hidden">
+    <button id="prevBtn" onclick="prevSoal()" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 text-sm sm:text-base">Kembali</button>
+    <button id="nextBtn" onclick="nextSoal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 text-sm sm:text-base">Selanjutnya</button>
+  </div>
+</div>
+</main>
+
+<!-- === FOOTER + INFO TAMBAHAN === -->
+<footer class="bg-blue-800 text-white text-center py-4 mt-10 text-sm">
+  <p>© 2025 KOMBEL SOU BATIK | WILAYAH DONGGALA 1</p>
+</footer>
+
+<!-- Modal Zoom -->
+<div id="imgZoomModal" class="flex"><img id="zoomedImage" src="" alt=""></div>
+
+<script>
+// === Menu mobile toggle ===
+document.getElementById("menuBtn").addEventListener("click",()=>{
+  document.getElementById("mobileMenu").classList.toggle("hidden");
+});
+
+// === JavaScript Kuis tetap (tempatkan semua logika kuis & PDF di sini seperti versi sebelumnya) ===
+</script>
+</body>
+</html>
