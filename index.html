@@ -3,131 +3,276 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ujian Online Informatika</title>
+<title>Kuis Informatika Interaktif</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+img.quiz-img {
+  max-width: 100%;
+  width: 280px;
+  border-radius: 0.5rem;
+  margin-top: 0.75rem;
+  cursor: zoom-in;
+  transition: transform 0.2s;
+}
+img.quiz-img:hover { transform: scale(1.05); }
+#imgZoomModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+}
+#imgZoomModal img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 1rem;
+  box-shadow: 0 0 20px rgba(255,255,255,0.6);
+  cursor: zoom-out;
+}
+</style>
 </head>
-<body class="bg-gray-100 font-sans p-4">
 
-<div id="form-container" class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md">
-  <h1 class="text-xl font-bold mb-4 text-center">Formulir Ujian</h1>
-  <label class="block mb-2 font-semibold">Nama:</label>
-  <input id="nama" type="text" class="w-full p-2 border rounded mb-4">
-  <label class="block mb-2 font-semibold">Kelas:</label>
-  <input id="kelas" type="text" class="w-full p-2 border rounded mb-4">
-  <button onclick="mulaiUjian()" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Mulai Ujian</button>
+<body class="bg-gradient-to-br from-blue-50 to-gray-100 min-h-screen flex items-center justify-center p-4">
+<div class="bg-white p-6 md:p-8 rounded-3xl shadow-2xl w-full max-w-3xl" id="mainContainer">
+  <h1 class="text-3xl font-bold text-center mb-6 text-blue-700">💻 Kuis Informatika Interaktif</h1>
+
+  <!-- Form Identitas -->
+  <div id="formIdentitas" class="text-gray-800">
+    <h2 class="text-lg font-bold mb-4 text-blue-700">🧾 Identitas Sekolah</h2>
+    <label class="block mb-2 font-semibold">Nama Kabupaten:</label>
+    <input id="namaKabupaten" type="text" class="border border-gray-300 rounded-lg p-2 w-full mb-4" placeholder="Contoh: Pemerintah Kabupaten Donggala">
+
+    <label class="block mb-2 font-semibold">Nama Sekolah:</label>
+    <input id="namaSekolah" type="text" class="border border-gray-300 rounded-lg p-2 w-full mb-4" placeholder="Contoh: SMP Negeri 10 Banawa Selatan">
+
+    <label class="block mb-2 font-semibold">Alamat Sekolah:</label>
+    <input id="alamatSekolah" type="text" class="border border-gray-300 rounded-lg p-2 w-full mb-4" placeholder="Contoh: Alamat : Jl. PNPM Dusun Bambami, Desa Malino Kec.Banawa Selatan">
+
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      <div>
+        <label class="block mb-2 font-semibold">Logo Kabupaten:</label>
+        <input type="file" id="logoKab" accept="image/*" class="w-full border border-gray-300 rounded-lg p-2">
+      </div>
+      <div>
+        <label class="block mb-2 font-semibold">Logo Sekolah:</label>
+        <input type="file" id="logoSek" accept="image/*" class="w-full border border-gray-300 rounded-lg p-2">
+      </div>
+    </div>
+
+    <h2 class="text-lg font-bold mb-4 text-blue-700">👨‍🎓 Identitas Peserta</h2>
+    <label class="block mb-2 font-semibold">Nama Siswa:</label>
+    <input id="namaSiswa" type="text" class="border border-gray-300 rounded-lg p-2 w-full mb-4">
+
+    <label class="block mb-2 font-semibold">Kelas:</label>
+    <input id="kelasSiswa" type="text" class="border border-gray-300 rounded-lg p-2 w-full mb-4">
+
+    <label class="block mb-2 font-semibold">Guru Mata Pelajaran:</label>
+    <input id="namaGuru" type="text" class="border border-gray-300 rounded-lg p-2 w-full mb-4">
+
+    <label class="block mb-2 font-semibold">Tanda Tangan Guru (PNG Transparan):</label>
+    <input type="file" id="ttdGuru" accept="image/png" class="w-full border border-gray-300 rounded-lg p-2 mb-6">
+
+    <button onclick="mulaiKuis()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700">Mulai Kuis</button>
+  </div>
+
+  <!-- Kontainer Soal -->
+  <div id="kuisContainer" class="text-gray-800 hidden"></div>
+
+  <!-- Tombol Navigasi -->
+  <div id="navButtons" class="flex justify-between mt-6 hidden">
+    <button id="prevBtn" onclick="prevSoal()" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">Kembali</button>
+    <button id="nextBtn" onclick="nextSoal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">Selanjutnya</button>
+  </div>
 </div>
 
-<div id="ujian-container" class="hidden max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
-  <div id="timer" class="text-right text-sm font-bold text-red-600 mb-3"></div>
-  <form id="ujianForm" onsubmit="event.preventDefault(); konfirmasiSubmit();"></form>
-</div>
+<!-- Modal Zoom -->
+<div id="imgZoomModal" class="flex"><img id="zoomedImage" src="" alt=""></div>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbye6IpQMGJUXAdpGE_aL0bhCoWqx8LYJ7zxdAaA5UI0oEI2vS18F9FRP4wUCdybsc13dQ/exec"; 
-let examData = [];
-let answers = {};
-let timerInterval;
+const kuis=[
+  {soal:"Perangkat yang digunakan untuk memasukkan data atau perintah ke dalam komputer disebut ...", pilihan:["Output device","Storage device","Input device","Processing device"], benar:2, Gambar:"https://mohsai.com/wp-content/uploads/2023/10/13-Perangkat-Keras-Komputer-untuk-Memasukkan-Data-kedalam-komputer.jpg"},
+  {soal:"Program Microsoft Word termasuk jenis perangkat lunak ...", pilihan:["Sistem operasi","Aplikasi pengolah kata","Pengolah angka","Peramban internet"], benar:1, Gambar:"https://cdn.prod.website-files.com/5eb6815bc8e0bd376c3cae22/6777ebaa742b1b6bfe09950e_6777eb03cf03657800bda97f_ms%2520word.webp"},
+  {soal:"CPU merupakan singkatan dari ...", pilihan:["Central Process Unit","Central Processing Unit","Center Program Unit","Control Process Utility"], benar:1, Gambar:"https://cdn.pixabay.com/photo/2015/03/21/19/27/pc-684125_1280.jpg"},
+  {soal:"Fungsi utama dari RAM adalah ...", pilihan:["Menyimpan data permanen","Menyimpan data sementara","Menjalankan sistem operasi","Menyimpan file hasil kerja"], benar:1, Gambar:"https://blog.dimensidata.com/wp-content/uploads/Perbedaan-Memori-RAM-Server-dan-Memori-RAM-PC-660x330.jpg"},
+  {soal:"Internet merupakan kepanjangan dari ...", pilihan:["International Network","Internal Net","Internet National","Interconnect Network"], benar:0, Gambar:"https://bams.blog/wp-content/uploads/2024/04/Perbedaan-Intranet-dan-Internet.png"},
+  {soal:"Perangkat lunak yang digunakan untuk menjelajahi halaman web disebut ...", pilihan:["Editor","Browser","Compiler","Emulator"], benar:1, Gambar:"https://cdn.pixabay.com/photo/2016/03/18/16/44/browsers-1265309_1280.png"},
+  {soal:"Bahasa pemrograman Python termasuk bahasa pemrograman tingkat ...", pilihan:["Rendah","Mesin","Tinggi","Biner"], benar:2, Gambar:"https://algorit.ma/wp-content/uploads/2022/02/Python-Logo-2048x1280.png"},
+  {soal:"Contoh perangkat output yang sering digunakan adalah ...", pilihan:["Keyboard","Mouse","Monitor","Scanner"], benar:2, Gambar:"https://uici.ac.id/wp-content/uploads/2024/01/IMG_2255.jpeg.webp"},
+  {soal:"Dalam algoritma, langkah-langkah penyelesaian masalah yang ditulis menggunakan simbol disebut ...", pilihan:["Kode program","Flowchart","Pseudocode","Diagram sistem"], benar:1, Gambar:"https://itbox.id/wp-content/uploads/2022/10/basic-symbols-table.jpeg"},
+  {soal:"Berikut ini yang bukan termasuk etika dalam penggunaan teknologi informasi adalah ...", pilihan:["Menghormati privasi orang lain","Menyebarkan berita palsu di media sosial","Menggunakan internet untuk belajar","Tidak membagikan data pribadi orang lain"], benar:1, Gambar:"https://cdn.rri.co.id/berita/Pekanbaru/o/1754406997246-etika_digital_yang_harus_di_ketahui/hidxasfjkl5i5kt.jpeg"}
+];
 
-async function mulaiUjian() {
-  const nama = document.getElementById("nama").value.trim();
-  const kelas = document.getElementById("kelas").value.trim();
-  if (!nama || !kelas) return alert("Isi nama dan kelas terlebih dahulu!");
+let indeks=0,skor=0,jawabanUser=[],logoKabData=null,logoSekData=null,ttdGuruData=null;
 
-  document.getElementById("form-container").classList.add("hidden");
-  document.getElementById("ujian-container").classList.remove("hidden");
-
-  const res = await fetch(`${scriptURL}?action=getSoal`);
-  const data = await res.json();
-  examData = data.questions;
-
-  tampilkanSoal(examData);
-  mulaiTimer(15); // 15 menit
-}
-
-function tampilkanSoal(questions) {
-  const form = document.getElementById("ujianForm");
-  form.innerHTML = "";
-
-  questions.forEach((q, index) => {
-    const div = document.createElement("div");
-    div.className = "mb-4 border-b pb-2";
-    div.innerHTML = `
-      <p class="font-semibold mb-2">${index + 1}. ${q.soal}</p>
-      ${q.pilihan.map(p => `
-        <label class="block">
-          <input type="radio" name="q${index}" value="${p}" class="mr-2">
-          ${p}
-        </label>`).join("")}
-    `;
-    form.appendChild(div);
-  });
-
-  const submitBtn = document.createElement("button");
-  submitBtn.textContent = "Selesai Ujian";
-  submitBtn.className = "mt-4 w-full bg-green-600 text-white py-2 rounded hover:bg-green-700";
-  submitBtn.type = "submit";
-  form.appendChild(submitBtn);
-}
-
-function mulaiTimer(menit) {
-  let sisa = menit * 60;
-  const timer = document.getElementById("timer");
-  timerInterval = setInterval(() => {
-    const m = Math.floor(sisa / 60);
-    const s = sisa % 60;
-    timer.textContent = `Sisa waktu: ${m}:${s < 10 ? "0" : ""}${s}`;
-    if (sisa <= 0) {
-      clearInterval(timerInterval);
-      konfirmasiSubmit(true);
-    }
-    sisa--;
-  }, 1000);
-}
-
-function konfirmasiSubmit(auto = false) {
-  const yakin = auto || confirm("Apakah Anda yakin ingin mengirim jawaban?");
-  if (yakin) submitExam();
-}
-
-async function submitExam() {
-  clearInterval(timerInterval);
-  const nama = document.getElementById("nama").value;
-  const kelas = document.getElementById("kelas").value;
-
-  const formData = new FormData(document.getElementById("ujianForm"));
-  examData.forEach((q, i) => {
-    answers[`q${i}`] = formData.get(`q${i}`) || "";
-  });
-
-  let skor = 0;
-  examData.forEach((q, i) => {
-    if (answers[`q${i}`] === q.kunci) skor++;
-  });
-
-  const jawabanJSON = JSON.stringify(answers);
-  await fetch(scriptURL, {
-    method: "POST",
-    body: new URLSearchParams({
-      action: "submitJawaban",
-      nama,
-      kelas,
-      skor,
-      jawaban: jawabanJSON,
-    }),
-  });
-
-  alert(`Ujian selesai!\nNilai Anda: ${skor}/${examData.length}`);
-  location.reload();
-}
-
-// Cegah keluar sebelum submit
-window.addEventListener('beforeunload', (e) => {
-  if (Object.keys(answers).length < examData.length) {
-    e.preventDefault();
-    e.returnValue = 'Ujian Anda belum dikumpulkan. Yakin ingin keluar?';
-  }
+// Konversi logo & tanda tangan ke base64
+document.getElementById("logoKab").addEventListener("change",e=>{
+  const file=e.target.files[0];
+  if(file){const r=new FileReader();r.onload=()=>logoKabData=r.result;r.readAsDataURL(file);}
 });
-</script>
+document.getElementById("logoSek").addEventListener("change",e=>{
+  const file=e.target.files[0];
+  if(file){const r=new FileReader();r.onload=()=>logoSekData=r.result;r.readAsDataURL(file);}
+});
+document.getElementById("ttdGuru").addEventListener("change",e=>{
+  const file=e.target.files[0];
+  if(file){const r=new FileReader();r.onload=()=>ttdGuruData=r.result;r.readAsDataURL(file);}
+});
 
+function mulaiKuis(){
+  const nama=document.getElementById("namaSiswa").value.trim();
+  const kelas=document.getElementById("kelasSiswa").value.trim();
+  const guru=document.getElementById("namaGuru").value.trim();
+  if(!nama||!kelas||!guru)return alert("Lengkapi semua data sebelum mulai!");
+  document.getElementById("formIdentitas").classList.add("hidden");
+  document.getElementById("kuisContainer").classList.remove("hidden");
+  document.getElementById("navButtons").classList.remove("hidden");
+  loadKuis();
+}
+
+function loadKuis(){
+  const k=kuis[indeks];
+  const gambar=k.Gambar?`<img src="${k.Gambar}" class="quiz-img mx-auto" onclick="openImgZoom('${k.Gambar}')">`:"";
+  document.getElementById("kuisContainer").innerHTML=`
+    <h2 class="text-lg md:text-xl font-semibold mb-3 text-gray-900">Soal ${indeks+1} dari ${kuis.length}</h2>
+    <p class="mb-3">${k.soal}</p>${gambar}
+    <div class="mt-4 grid grid-cols-1 gap-2">
+      ${k.pilihan.map((p,i)=>`
+        <button onclick="jawab(${i})" class="w-full text-left bg-gray-100 hover:bg-blue-100 p-3 rounded-lg border">${p}</button>`).join("")}
+    </div>`;
+  document.getElementById("prevBtn").style.visibility=indeks>0?"visible":"hidden";
+}
+
+function jawab(i){
+  jawabanUser[indeks]=i;
+  if(i===kuis[indeks].benar)skor++;
+  indeks++;
+  if(indeks<kuis.length)loadKuis();else selesai();
+}
+
+function prevSoal(){if(indeks>0){indeks--;loadKuis();}}
+function nextSoal(){indeks++;if(indeks<kuis.length)loadKuis();else selesai();}
+
+function selesai(){
+  const nama=document.getElementById("namaSiswa").value;
+  const kelas=document.getElementById("kelasSiswa").value;
+  document.getElementById("kuisContainer").innerHTML=`
+  <div class="text-center">
+    <h2 class="text-2xl font-bold text-green-600 mb-3">🎉 Kuis Selesai!</h2>
+    <p>Nama: <b>${nama}</b></p>
+    <p>Kelas: <b>${kelas}</b></p>
+    <p class="mb-4">Skor kamu: <b>${skor}/${kuis.length}</b></p>
+    <button onclick="unduhPDF()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">📄 Unduh Hasil (PDF)</button>
+  </div>`;
+  document.getElementById("navButtons").classList.add("hidden");
+}
+
+// === PDF ===
+async function unduhPDF(){
+  const { jsPDF }=window.jspdf;
+  const doc=new jsPDF("p","mm","a4");
+  doc.setFont("times","normal");
+  let y=20;
+
+  const namaKab=document.getElementById("namaKabupaten").value;
+  const namaSek=document.getElementById("namaSekolah").value;
+  const alamat=document.getElementById("alamatSekolah").value;
+  const nama=document.getElementById("namaSiswa").value;
+  const kelas=document.getElementById("kelasSiswa").value;
+  const guru=document.getElementById("namaGuru").value;
+
+  if(logoKabData)doc.addImage(logoKabData,"PNG",20,10,20,20);
+  if(logoSekData)doc.addImage(logoSekData,"PNG",170,10,20,20);
+
+  doc.setFontSize(14);
+  doc.text(namaKab.toUpperCase(),105,18,{align:"center"});
+  doc.setFontSize(13);
+  doc.text(namaSek,105,25,{align:"center"});
+  doc.setFontSize(11);
+  doc.text(alamat,105,32,{align:"center"});
+
+  doc.setLineWidth(1.0); // Garis lebih tebal
+  doc.line(20,35,190,35);
+  y=45;
+
+  doc.setFontSize(16);
+  doc.text("HASIL KUIS INFORMATIKA",105,y,{align:"center"}); y+=10;
+  doc.setFontSize(12);
+  doc.text(`Nama: ${nama}`,20,y); y+=6;
+  doc.text(`Kelas: ${kelas}`,20,y); y+=6;
+  doc.text(`Guru Mata Pelajaran: ${guru}`,20,y); y+=10;
+
+  for(let i=0;i<kuis.length;i++){
+    const k=kuis[i];
+    const jw=jawabanUser[i];
+    const splitSoal=doc.splitTextToSize(`${i+1}. ${k.soal}`,170);
+    doc.setTextColor(0,0,0);
+    doc.text(splitSoal,20,y);
+    y+=splitSoal.length*6;
+
+    if(k.Gambar){
+      try{
+        const imgData=await loadImageToBase64(k.Gambar);
+        doc.addImage(imgData,"JPEG",25,y,40,30);
+        y+=35;
+      }catch(e){}
+    }
+
+    k.pilihan.forEach((p,idx)=>{
+      if(idx===k.benar){
+        doc.setTextColor(0,128,0);
+        doc.text(`(${String.fromCharCode(65+idx)}) ${p} [Jawaban Benar]`,25,y);
+      }else if(idx===jw && jw!==k.benar){
+        doc.setTextColor(200,0,0);
+        doc.text(`(${String.fromCharCode(65+idx)}) ${p} [Jawaban Kamu Salah]`,25,y);
+      }else{
+        doc.setTextColor(0,0,0);
+        doc.text(`(${String.fromCharCode(65+idx)}) ${p}`,25,y);
+      }
+      y+=6;
+    });
+    y+=5;
+    if(y>260){doc.addPage();y=20;}
+  }
+
+  // Kolom tanda tangan guru
+  y+=15;
+  doc.setTextColor(0,0,0);
+  doc.setFontSize(12);
+  doc.text("Mengetahui,",140,y);
+  y+=6;
+  doc.text("Guru Mata Pelajaran",140,y);
+
+  if(ttdGuruData){
+    doc.addImage(ttdGuruData,"PNG",135,y,40,20);
+    y+=25;
+  } else y+=25;
+
+  doc.text(`(${guru})`,140,y);
+
+  doc.save(`Hasil_Kuis_${nama}.pdf`);
+}
+
+function loadImageToBase64(url){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.crossOrigin="anonymous";
+    img.onload=function(){
+      const canvas=document.createElement("canvas");
+      canvas.width=this.width;canvas.height=this.height;
+      const ctx=canvas.getContext("2d");
+      ctx.drawImage(this,0,0);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror=reject;
+    img.src=url;
+  });
+}
+
+function openImgZoom(src){zoomedImage.src=src;imgZoomModal.style.display="flex";}
+imgZoomModal.onclick=()=>imgZoomModal.style.display="none";
+</script>
 </body>
 </html>
