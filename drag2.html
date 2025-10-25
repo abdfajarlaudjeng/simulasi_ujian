@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UJIAN UTS INFORMATIKA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        .drag-item {
+            cursor: grab;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        
+        .drag-item:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        .drag-item.dragging {
+            opacity: 0.6;
+            transform: rotate(5deg) scale(1.1);
+            z-index: 1000;
+        }
+        
+        .drop-zone {
+            min-height: 120px;
+            border: 3px dashed #d1d5db;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .drop-zone.drag-over {
+            border-color: #10b981;
+            background-color: #ecfdf5;
+            border-style: solid;
+            transform: scale(1.02);
+        }
+        
+        .drop-zone.correct {
+            border-color: #10b981;
+            background-color: #d1fae5;
+            animation: correctPulse 0.6s ease-out;
+        }
+        
+        .drop-zone.incorrect {
+            border-color: #ef4444;
+            background-color: #fee2e2;
+            animation: shake 0.5s ease-out;
+        }
+        
+        @keyframes correctPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .item-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            /* Tambahan untuk menyejajarkan emoji */
+            height: 64px; /* 4rem */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- TAMBAHAN STYLE UNTUK GAMBAR --- */
+        .item-icon-img {
+            width: 100%; /* Lebar penuh */
+            height: 64px; /* Tinggi sama dgn kotak emoji */
+            object-fit: contain; /* Agar gambar pas, tidak terpotong/gepeng */
+            margin-bottom: 0.5rem;
+        }
+        /* --- BATAS TAMBAHAN --- */
+        
+        .score-animation {
+            animation: scoreUp 0.8s ease-out;
+        }
+        
+        @keyframes scoreUp {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); color: #10b981; }
+            100% { transform: scale(1); }
+        }
+
+        .game-area {
+            display: none;
+        }
+
+        .game-area.active {
+            display: block;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-4">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">🖥️ Belajar Informatika SMP</h1>
+            <p class="text-lg text-gray-600">Drag gambar ke kotak yang sesuai untuk belajar!</p>
+        </div>
+
+        <div id="student-form" class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">📝 Data Siswa</h2>
+            <div class="grid md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Lengkap</label>
+                    <input type="text" id="student-name" placeholder="Masukkan nama lengkap"
+                           class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">NISN</label>
+                    <input type="text" id="student-nisn" placeholder="Masukkan NISN"
+                           class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Kelas</label>
+                    <select id="student-class" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                        <option value="">Pilih Kelas</option>
+                        <option value="VII">VII</option>   
+                        <option value="VIII">VIII</option>                        
+                        <option value="IX">IX</option>     
+                    </select>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <button onclick="saveStudentData()"
+                         class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors">
+                    💾 Simpan Data & Mulai Belajar
+                </button>
+            </div>
+            <div id="student-info" class="hidden mt-4 p-4 bg-blue-50 rounded-lg">
+                <p class="text-center text-blue-800">
+                    <strong>Selamat belajar, <span id="display-name"></span>!</strong><br>
+                    <small>Kelas: <span id="display-class"></span> |
+ NISN: <span id="display-nisn"></span></small>
+                </p>
+            </div>
+        </div>
+
+        <div id="game-area" class="game-area">
+            <div id="loading-overlay" class="text-center p-10 hidden">
+                <p class="text-lg font-semibold text-blue-700">🚀 Memuat materi dari server, mohon tunggu...</p>
+            </div>
+
+            <div id="game-content" class="hidden">
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                        <div class="flex items-center space-x-4">
+                            <label class="text-lg font-semibold text-gray-700">Pilih Materi:</label>
+                            <select id="category-select" onchange="changeCategory()"
+                                    class="bg-blue-50 border-2 border-blue-200 rounded-lg px-4 py-2 text-lg font-medium focus:outline-none focus:border-blue-500">
+                                <option value="hardware">🔧 Hardware Komputer</option>
+                                <option value="software">💿 Software Komputer</option>
+                                <option value="network">🌐 Jaringan Komputer</option>
+                                <option value="algorithm">🧮 Algoritma & Pemrograman</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-600" id="score">0</div>
+                                <div class="text-sm text-gray-600">Skor</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-600" id="total">0/0</div>
+                                <div class="text-sm text-gray-600">Progress</div>
+                            </div>
+                            <button onclick="resetGame()"
+                                    class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors">
+                                🔄 Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-4">
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                                <span id="items-title">🔧 Komponen Hardware</span>
+                            </h2>
+                            <div id="drag-items" class="grid grid-cols-2 gap-4">
+                                </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-8">
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                                <span id="zones-title">🎯 Cocokkan dengan Kategori</span>
+                            </h2>
+                            <div id="drop-zones" class="grid md:grid-cols-2 gap-6">
+                                </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                    <div class="flex items-start space-x-3">
+                        <div class="text-2xl">💡</div>
+                        <div>
+                            <h3 class="font-bold text-blue-800 mb-2">Cara Bermain:</h3>
+                            <ol class="text-blue-700 space-y-1">
+                                <li>1. Pilih kategori materi dari dropdown di atas</li>
+                                <li>2. Drag gambar dari panel kiri ke kotak yang sesuai di kanan</li>
+                                <li>3. Kotak akan berubah hijau jika benar, merah jika salah</li>
+                                <li>4. Kumpulkan skor sebanyak-banyaknya!</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div> 
+        </div>
+    </div>
+
+    <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-8 max-w-md mx-4 text-center">
+            <div class="text-6xl mb-4">🎉</div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Selamat!</h3>
+            <p class="text-gray-600 mb-6">Kamu berhasil menyelesaikan semua soal dengan skor <span id="final-score" class="font-bold text-green-600"></span>!</p>
+            <div class="flex space-x-3 justify-center">
+                <button onclick="closeSuccessModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded-lg">
+                    Tutup
+                </button>
+                <button onclick="resetGame(); closeSuccessModal();"
+ class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg">
+                    Main Lagi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // -----------------------------------------------------------------
+        // !! PENTING: GANTI DENGAN URL WEB APP BARU ANDA !!
+        // -----------------------------------------------------------------
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxF4R_6kf1SytXUaIkG_2Dufm2z8gBE4A4mB90NulVUEYDfKyZt9o8fgue7v5bu5wYuDA/exec";
+        // -----------------------------------------------------------------
+        
+        let currentCategory = 'hardware';
+        let score = 0;
+        let correctAnswers = 0;
+        let totalQuestions = 0;
+        let usedItems = new Set();
+        let studentData = null;
+        let gameStartTime = null;
+        
+        // Variabel global untuk menyimpan materi dari Google Sheet
+        let materials = {};
+        
+        // --- Fungsi untuk menyimpan data siswa dan memulai game ---
+        function saveStudentData() {
+            const name = document.getElementById('student-name').value.trim();
+            const nisn = document.getElementById('student-nisn').value.trim();
+            const studentClass = document.getElementById('student-class').value;
+            
+            if (!name || !nisn || !studentClass) {
+                alert('Mohon lengkapi semua data siswa!');
+                return;
+            }
+            
+            studentData = {
+                name: name,
+                nisn: nisn,
+                class: studentClass,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Tampilkan info siswa
+            document.getElementById('display-name').textContent = name;
+            document.getElementById('display-class').textContent = studentClass;
+            document.getElementById('display-nisn').textContent = nisn;
+            document.getElementById('student-info').classList.remove('hidden');
+            
+            // Dapatkan elemen UI Game
+            const gameArea = document.getElementById('game-area');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const gameContent = document.getElementById('game-content');
+            
+            // Tampilkan game area dan loading
+            gameArea.classList.add('active');
+            loadingOverlay.classList.remove('hidden');
+            gameContent.classList.add('hidden');
+            gameArea.scrollIntoView({ behavior: 'smooth' });
+            
+            // Ambil materi dari Google Sheet
+            fetch(SCRIPT_URL, { method: 'GET' })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        materials = result.data; // Simpan materi secara global
+                        gameStartTime = new Date();
+                        loadCategory(currentCategory); // Muat kategori pertama
+                        
+                        // Sembunyikan loading dan tampilkan game
+                        loadingOverlay.classList.add('hidden');
+                        gameContent.classList.remove('hidden');
+                    } else {
+                        // Tampilkan error jika gagal memuat
+                        loadingOverlay.innerHTML = `<p class="text-red-500 font-bold p-10">Gagal memuat materi: ${result.message}</p>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch Error:', error);
+                    loadingOverlay.innerHTML = `<p class="text-red-500 font-bold p-10">Error: Tidak dapat terhubung ke server. Pastikan URL SCRIPT_URL sudah benar dan periksa F12 Console.</p>`;
+                });
+        }
+        
+        // --- Fungsi untuk menyimpan hasil game ke Google Sheet ---
+        function saveGameResult() {
+            if (!studentData) return;
+            
+            const accuracy = (totalQuestions > 0) ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+            const duration = Math.round((new Date() - gameStartTime) / 1000); // dalam detik
+            
+            const gameResult = {
+                name: studentData.name,
+                nisn: studentData.nisn,
+                class: studentData.class,
+                category: currentCategory,
+                score: score,
+                correctAnswers: correctAnswers,
+                totalQuestions: totalQuestions,
+                accuracy: accuracy,
+                duration: duration
+            };
+            
+            console.log('Mengirim hasil:', gameResult);
+            
+            // Kirim data ke Google Sheets
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain;charset=utf-8',
+                },
+                body: JSON.stringify(gameResult) // Kirim sebagai string
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    console.log('Hasil berhasil dikirim ke Google Sheets.');
+                } else {
+                    console.error('Gagal mengirim hasil:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error saat mengirim hasil:', error);
+            });
+        }
+
+        // --- Fungsi-Fungsi Game ---
+
+        function changeCategory() {
+            const select = document.getElementById('category-select');
+            currentCategory = select.value;
+            resetGame();
+        }
+
+        function loadCategory(category) {
+            // Cek jika materi ada
+            if (!materials[category] || !materials[category].items) {
+                console.error(`Materi untuk kategori "${category}" tidak ditemukan atau kosong.`);
+                alert(`Error: Materi untuk "${category}" tidak dapat dimuat. Periksa Google Sheet.`);
+                return;
+            }
+
+            const material = materials[category];
+            totalQuestions = material.items.length;
+            
+            // Update titles
+            document.getElementById('items-title').textContent = material.title;
+            document.getElementById('zones-title').textContent = '🎯 Cocokkan dengan Kategori';
+
+            // Load drag items
+            loadDragItems(material.items);
+            // Load drop zones
+            loadDropZones(material.zones);
+            
+            updateProgress();
+        }
+
+        // --- FUNGSI YANG DIMODIFIKASI UNTUK GAMBAR ---
+        function loadDragItems(items) {
+            const container = document.getElementById('drag-items');
+            container.innerHTML = '';
+            
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'drag-item bg-gradient-to-br from-blue-100 to-blue-200 p-4 rounded-xl border-2 border-blue-300 text-center cursor-grab hover:shadow-lg';
+                div.draggable = true;
+                div.dataset.itemId = item.id;
+                div.dataset.target = item.target;
+                
+                // --- PERUBAHAN ADA DI SINI ---
+                let iconHtml = '';
+                
+                // Cek apakah item.icon adalah sebuah URL gambar
+                if (item.icon && (item.icon.startsWith('http://') || item.icon.startsWith('https://'))) {
+                    // Jika ya, gunakan tag <img>
+                    iconHtml = `<img src="${item.icon}" alt="${item.name}" class="item-icon-img">`;
+                } else {
+                    // Jika tidak (hanya teks/emoji), gunakan <div> seperti sebelumnya
+                    iconHtml = `<div class="item-icon">${item.icon}</div>`;
+                }
+
+                div.innerHTML = `
+                    ${iconHtml}
+                    <div class="font-semibold text-gray-800 text-sm">${item.name}</div>
+                `;
+                // --- BATAS PERUBAHAN ---
+                
+                div.addEventListener('dragstart', handleDragStart);
+                div.addEventListener('dragend', handleDragEnd);
+                
+                container.appendChild(div);
+            });
+        }
+
+        function loadDropZones(zones) {
+            const container = document.getElementById('drop-zones');
+            container.innerHTML = '';
+            
+            zones.forEach(zone => {
+                const div = document.createElement('div');
+                div.className = 'drop-zone bg-gray-50 rounded-xl p-6 text-center';
+                div.dataset.zoneId = zone.id;
+                
+                div.innerHTML = `
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">${zone.name}</h3>
+                    <p class="text-sm text-gray-600 mb-4">${zone.description}</p>
+                    <div class="text-4xl text-gray-300">📋</div>
+                `;
+                
+                div.addEventListener('dragover', handleDragOver);
+                div.addEventListener('drop', handleDrop);
+                div.addEventListener('dragenter', handleDragEnter);
+                div.addEventListener('dragleave', handleDragLeave);
+                
+                container.appendChild(div);
+            });
+        }
+
+        function handleDragStart(e) {
+            const itemId = e.target.dataset.itemId;
+            const target = e.target.dataset.target;
+            
+            e.dataTransfer.setData('text/plain', JSON.stringify({ itemId, target }));
+            e.target.classList.add('dragging');
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            if (!e.currentTarget.contains(e.relatedTarget)) {
+                e.currentTarget.classList.remove('drag-over');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            
+            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+            const zoneId = e.currentTarget.dataset.zoneId;
+            
+            // Check if item already used
+            if (usedItems.has(data.itemId)) {
+                return;
+            }
+            
+            // Check if correct
+            if (data.target === zoneId) {
+                // Correct answer
+                e.currentTarget.classList.add('correct');
+                e.currentTarget.innerHTML = `
+                    <h3 class="text-lg font-bold text-green-800 mb-2">✅ Benar!</h3>
+                    <p class="text-sm text-green-600 mb-4">Jawaban tepat!</p>
+                    <div class="text-4xl text-green-500">✅</div>
+                `;
+                score += 10;
+                correctAnswers++;
+                usedItems.add(data.itemId);
+                
+                // Remove the dragged item
+                const draggedItem = document.querySelector(`[data-item-id="${data.itemId}"]`);
+                if (draggedItem) {
+                    draggedItem.style.opacity = '0.3';
+                    draggedItem.draggable = false;
+                    draggedItem.style.pointerEvents = 'none';
+                }
+                
+                updateScore();
+                updateProgress();
+                
+                // Check if game completed
+                if (correctAnswers === totalQuestions) {
+                    setTimeout(() => {
+                        saveGameResult(); // Kirim hasil ke Google Sheet
+                        showSuccessModal();
+                    }, 1000);
+                }
+                
+                setTimeout(() => {
+                    // Kembalikan ke state semula setelah 2 detik
+                    const zoneData = materials[currentCategory].zones.find(z => z.id === zoneId);
+                    e.currentTarget.classList.remove('correct');
+                    e.currentTarget.innerHTML = `
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">${zoneData.name}</h3>
+                        <p class="text-sm text-gray-600 mb-4">${zoneData.description}</p>
+                        <div class="text-4xl text-gray-300">📋</div>
+                    `;
+                }, 2000);
+            } else {
+                // Incorrect answer
+                e.currentTarget.classList.add('incorrect');
+                setTimeout(() => {
+                    e.currentTarget.classList.remove('incorrect');
+                }, 1000);
+            }
+        }
+
+        function updateScore() {
+            const scoreElement = document.getElementById('score');
+            scoreElement.textContent = score;
+            scoreElement.classList.add('score-animation');
+            
+            setTimeout(() => {
+                scoreElement.classList.remove('score-animation');
+            }, 800);
+        }
+
+        function updateProgress() {
+            document.getElementById('total').textContent = `${correctAnswers}/${totalQuestions}`;
+        }
+
+        function resetGame() {
+            score = 0;
+            correctAnswers = 0;
+            usedItems.clear();
+            gameStartTime = new Date();
+            
+            updateScore();
+            // Muat ulang kategori saat ini
+            loadCategory(currentCategory); 
+        }
+
+        function showSuccessModal() {
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('success-modal').classList.remove('hidden');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('success-modal').classList.add('hidden');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('success-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSuccessModal();
+            }
+        });
+    </script>
+</body>
+</html>
