@@ -239,33 +239,33 @@
         </div>
     </div>
 
-    <script>
+   <script>
         // -----------------------------------------------------------------
-        // !! PENTING: GANTI DENGAN URL WEB APP ANDA DARI GOOGLE APPS SCRIPT !!
+        // !! PENTING: GANTI DENGAN URL WEB APP BARU ANDA !!
         // -----------------------------------------------------------------
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyNZmiDlbk3hbTqcbrgggEFWi4wXpRbV-oiD1D542snYLYw6-jSuD8gRfy4q8Os2F0KkA/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_rWoVBQv-oTSLKFDccqRb3UW5nc_F4J7uYbS-oH22D5YQaPE9Fh0nrb9MvsvSRDqzVA/exec";
         // -----------------------------------------------------------------
 
-        [cite_start]let currentCategory = 'hardware'; [cite: 55]
-        [cite_start]let score = 0; [cite: 56]
-        [cite_start]let correctAnswers = 0; [cite: 56]
-        [cite_start]let totalQuestions = 0; [cite: 56]
-        [cite_start]let usedItems = new Set(); [cite: 56]
-        [cite_start]let studentData = null; [cite: 57]
-        [cite_start]let gameStartTime = null; [cite: 57]
+        let currentCategory = 'hardware';
+        let score = 0;
+        let correctAnswers = 0;
+        let totalQuestions = 0;
+        let usedItems = new Set();
+        let studentData = null;
+        let gameStartTime = null;
 
         // Variabel global untuk menyimpan materi dari Google Sheet
         let materials = {};
 
         // --- FUNGSI BARU: Menggantikan saveStudentData() yang lama ---
         function saveStudentData() {
-            [cite_start]const name = document.getElementById('student-name').value.trim(); [cite: 86]
-            [cite_start]const nisn = document.getElementById('student-nisn').value.trim(); [cite: 87]
-            [cite_start]const studentClass = document.getElementById('student-class').value; [cite: 87]
+            const name = document.getElementById('student-name').value.trim();
+            const nisn = document.getElementById('student-nisn').value.trim();
+            const studentClass = document.getElementById('student-class').value;
 
             if (!name || !nisn || !studentClass) {
                 alert('Mohon lengkapi semua data siswa!');
-                [cite_start]return; [cite: 88]
+                return;
             }
 
             studentData = {
@@ -273,13 +273,13 @@
                 nisn: nisn,
                 class: studentClass,
                 timestamp: new Date().toISOString()
-            [cite_start]}; [cite: 88]
+            };
 
             // Tampilkan info siswa
-            [cite_start]document.getElementById('display-name').textContent = name; [cite: 89]
-            [cite_start]document.getElementById('display-class').textContent = studentClass; [cite: 90]
-            [cite_start]document.getElementById('display-nisn').textContent = nisn; [cite: 90]
-            [cite_start]document.getElementById('student-info').classList.remove('hidden'); [cite: 90]
+            document.getElementById('display-name').textContent = name;
+            document.getElementById('display-class').textContent = studentClass;
+            document.getElementById('display-nisn').textContent = nisn;
+            document.getElementById('student-info').classList.remove('hidden');
 
             // Dapatkan elemen UI Game
             const gameArea = document.getElementById('game-area');
@@ -287,10 +287,10 @@
             const gameContent = document.getElementById('game-content');
 
             // Tampilkan game area dan loading
-            [cite_start]gameArea.classList.add('active'); [cite: 91]
+            gameArea.classList.add('active');
             loadingOverlay.classList.remove('hidden');
             gameContent.classList.add('hidden');
-            [cite_start]gameArea.scrollIntoView({ behavior: 'smooth' }); [cite: 93]
+            gameArea.scrollIntoView({ behavior: 'smooth' });
 
             // Ambil materi dari Google Sheet
             fetch(SCRIPT_URL, { method: 'GET' })
@@ -298,8 +298,8 @@
                 .then(result => {
                     if (result.status === 'success') {
                         materials = result.data; // Simpan materi secara global
-                        [cite_start]gameStartTime = new Date(); [cite: 91]
-                        loadCategory(currentCategory); [cite_start]// Muat kategori pertama [cite: 91]
+                        gameStartTime = new Date();
+                        loadCategory(currentCategory); // Muat kategori pertama
                         
                         // Sembunyikan loading dan tampilkan game
                         loadingOverlay.classList.add('hidden');
@@ -311,13 +311,13 @@
                 })
                 .catch(error => {
                     console.error('Fetch Error:', error);
-                    loadingOverlay.innerHTML = `<p class="text-red-500 font-bold p-10">Error: Tidak dapat terhubung ke server. Pastikan URL SCRIPT_URL sudah benar.</p>`;
+                    loadingOverlay.innerHTML = `<p class="text-red-500 font-bold p-10">Error: Tidak dapat terhubung ke server. Pastikan URL SCRIPT_URL sudah benar dan periksa F12 Console.</p>`;
                 });
         }
 
         // --- FUNGSI BARU: Menggantikan saveGameResult() yang lama ---
         function saveGameResult() {
-            [cite_start]if (!studentData) return; [cite: 97]
+            if (!studentData) return;
             
             const accuracy = (totalQuestions > 0) ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
             const duration = Math.round((new Date() - gameStartTime) / 1000); // dalam detik
@@ -332,15 +332,17 @@
                 totalQuestions: totalQuestions,
                 accuracy: accuracy,
                 duration: duration
-            [cite_start]}; [cite: 98, 99]
+            };
 
-            [cite_start]console.log('Mengirim hasil:', gameResult); [cite: 100]
+            console.log('Mengirim hasil:', gameResult);
             
             // Kirim data ke Google Sheets
             fetch(SCRIPT_URL, {
                 method: 'POST',
+                // Mode 'no-cors' seringkali menyebabkan error transparan, lebih baik tangani CORS di server
+                // headers 'text/plain' adalah trik untuk 'simple request'
                 headers: {
-                    'Content-Type': 'text/plain;charset=utf-8', // Gunakan text/plain agar lebih aman dari CORS
+                    'Content-Type': 'text/plain;charset=utf-8', 
                 },
                 body: JSON.stringify(gameResult) // Kirim sebagai string
             })
@@ -357,218 +359,207 @@
             });
         }
 
-        // -------------------------------------------------------------
-        // TIDAK ADA PERUBAHAN PADA FUNGSI-FUNGSI DI BAWAH INI
-        // (Fungsi-fungsi ini sudah dinamis dan akan bekerja dengan
-        //  variabel 'materials' yang baru)
-        // -------------------------------------------------------------
+        // --- Fungsi-Fungsi Game (Tidak Berubah) ---
 
         function changeCategory() {
             const select = document.getElementById('category-select');
-            [cite_start]currentCategory = select.value; [cite: 101]
+            currentCategory = select.value;
             resetGame();
-            [cite_start]loadCategory(currentCategory); [cite: 101]
         }
 
         function loadCategory(category) {
+            // Cek jika materi ada
+            if (!materials[category] || !materials[category].items) {
+                console.error(`Materi untuk kategori "${category}" tidak ditemukan atau kosong.`);
+                alert(`Error: Materi untuk "${category}" tidak dapat dimuat. Periksa Google Sheet.`);
+                return;
+            }
+
             const material = materials[category];
-            [cite_start]totalQuestions = material.items.length; [cite: 102]
+            totalQuestions = material.items.length;
             
             // Update titles
             document.getElementById('items-title').textContent = material.title;
-            [cite_start]document.getElementById('zones-title').textContent = '🎯 Cocokkan dengan Kategori'; [cite: 44]
+            document.getElementById('zones-title').textContent = '🎯 Cocokkan dengan Kategori';
 
             // Load drag items
-            [cite_start]loadDragItems(material.items); [cite: 103]
+            loadDragItems(material.items);
             // Load drop zones
-            [cite_start]loadDropZones(material.zones); [cite: 104]
+            loadDropZones(material.zones);
             
-            [cite_start]updateProgress(); [cite: 105]
+            updateProgress();
         }
 
         function loadDragItems(items) {
             const container = document.getElementById('drag-items');
-            [cite_start]container.innerHTML = ''; [cite: 106]
+            container.innerHTML = '';
             
             items.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'drag-item bg-gradient-to-br from-blue-100 to-blue-200 p-4 rounded-xl border-2 border-blue-300 text-center cursor-grab hover:shadow-lg';
                 div.draggable = true;
                 div.dataset.itemId = item.id;
-                [cite_start]div.dataset.target = item.target; [cite: 107]
+                div.dataset.target = item.target;
                 
                 div.innerHTML = `
                     <div class="item-icon">${item.icon}</div>
                     <div class="font-semibold text-gray-800 text-sm">${item.name}</div>
-                [cite_start]`; [cite: 108]
+                `;
                 
                 div.addEventListener('dragstart', handleDragStart);
                 div.addEventListener('dragend', handleDragEnd);
                 
                 container.appendChild(div);
-            [cite_start]}); [cite: 109]
+            });
         }
 
         function loadDropZones(zones) {
             const container = document.getElementById('drop-zones');
-            [cite_start]container.innerHTML = ''; [cite: 110]
+            container.innerHTML = '';
             
             zones.forEach(zone => {
                 const div = document.createElement('div');
-                [cite_start]div.className = 'drop-zone bg-gray-50 rounded-xl p-6 text-center'; [cite: 6]
+                div.className = 'drop-zone bg-gray-50 rounded-xl p-6 text-center';
                 div.dataset.zoneId = zone.id;
                 
                 div.innerHTML = `
-                    [cite_start]<h3 class="text-lg font-bold text-gray-800 mb-2">${zone.name}</h3> [cite: 111]
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">${zone.name}</h3>
                     <p class="text-sm text-gray-600 mb-4">${zone.description}</p>
                     <div class="text-4xl text-gray-300">📋</div>
                 `;
                 
-                [cite_start]div.addEventListener('dragover', handleDragOver); [cite: 112]
-                [cite_start]div.addEventListener('drop', handleDrop); [cite: 112]
-                [cite_start]div.addEventListener('dragenter', handleDragEnter); [cite: 112]
-                [cite_start]div.addEventListener('dragleave', handleDragLeave); [cite: 112]
+                div.addEventListener('dragover', handleDragOver);
+                div.addEventListener('drop', handleDrop);
+                div.addEventListener('dragenter', handleDragEnter);
+                div.addEventListener('dragleave', handleDragLeave);
                 
                 container.appendChild(div);
-            [cite_start]}); [cite: 113]
+            });
         }
 
         function handleDragStart(e) {
-            [cite_start]const itemId = e.target.dataset.itemId; [cite: 114]
-            [cite_start]const target = e.target.dataset.target; [cite: 115]
+            const itemId = e.target.dataset.itemId;
+            const target = e.target.dataset.target;
             
             e.dataTransfer.setData('text/plain', JSON.stringify({ itemId, target }));
-            [cite_start]e.target.classList.add('dragging'); [cite: 115]
+            e.target.classList.add('dragging');
         }
 
         function handleDragEnd(e) {
-            [cite_start]e.target.classList.remove('dragging'); [cite: 116]
+            e.target.classList.remove('dragging');
         }
 
+
         function handleDragOver(e) {
-            [cite_start]e.preventDefault(); [cite: 117]
+            e.preventDefault();
         }
 
         function handleDragEnter(e) {
             e.preventDefault();
-            [cite_start]e.currentTarget.classList.add('drag-over'); [cite: 119]
+            e.currentTarget.classList.add('drag-over');
         }
 
         function handleDragLeave(e) {
             if (!e.currentTarget.contains(e.relatedTarget)) {
-                [cite_start]e.currentTarget.classList.remove('drag-over'); [cite: 120]
+                e.currentTarget.classList.remove('drag-over');
             }
         }
 
         function handleDrop(e) {
             e.preventDefault();
-            [cite_start]e.currentTarget.classList.remove('drag-over'); [cite: 121]
+            e.currentTarget.classList.remove('drag-over');
             
             const data = JSON.parse(e.dataTransfer.getData('text/plain'));
             const zoneId = e.currentTarget.dataset.zoneId;
             
             // Check if item already used
             if (usedItems.has(data.itemId)) {
-                [cite_start]return; [cite: 122]
+                return;
             }
             
             // Check if correct
             if (data.target === zoneId) {
                 // Correct answer
-                [cite_start]e.currentTarget.classList.add('correct'); [cite: 122]
+                e.currentTarget.classList.add('correct');
                 e.currentTarget.innerHTML = `
                     <h3 class="text-lg font-bold text-green-800 mb-2">✅ Benar!</h3>
                     <p class="text-sm text-green-600 mb-4">Jawaban tepat!</p>
                     <div class="text-4xl text-green-500">✅</div>
-                [cite_start]`; [cite: 123]
-                [cite_start]score += 10; [cite: 124]
-                [cite_start]correctAnswers++; [cite: 124]
-                [cite_start]usedItems.add(data.itemId); [cite: 124]
+                `;
+                score += 10;
+                correctAnswers++;
+                usedItems.add(data.itemId);
                 
                 // Remove the dragged item
                 const draggedItem = document.querySelector(`[data-item-id="${data.itemId}"]`);
-                [cite_start]if (draggedItem) { [cite: 125]
+                if (draggedItem) {
                     draggedItem.style.opacity = '0.3';
-                    [cite_start]draggedItem.draggable = false; [cite: 126]
-                    [cite_start]draggedItem.style.pointerEvents = 'none'; [cite: 126]
+                    draggedItem.draggable = false;
+                    draggedItem.style.pointerEvents = 'none';
                 }
                 
-                [cite_start]updateScore(); [cite: 126]
-                [cite_start]updateProgress(); [cite: 127]
+                updateScore();
+                updateProgress();
                 
                 // Check if game completed
                 if (correctAnswers === totalQuestions) {
                     setTimeout(() => {
                         saveGameResult(); // Kirim hasil ke Google Sheet
                         showSuccessModal();
-                    [cite_start]}, 1000); [cite: 128]
+                    }, 1000);
                 }
                 
                 setTimeout(() => {
+                    // Kembalikan ke state semula setelah 2 detik
+                    const zoneData = materials[currentCategory].zones.find(z => z.id === zoneId);
                     e.currentTarget.classList.remove('correct');
-                [cite_start]}, 2000); [cite: 129]
+                    e.currentTarget.innerHTML = `
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">${zoneData.name}</h3>
+                        <p class="text-sm text-gray-600 mb-4">${zoneData.description}</p>
+                        <div class="text-4xl text-gray-300">📋</div>
+                    `;
+                }, 2000);
             } else {
                 // Incorrect answer
-                [cite_start]e.currentTarget.classList.add('incorrect'); [cite: 130]
+                e.currentTarget.classList.add('incorrect');
                 setTimeout(() => {
                     e.currentTarget.classList.remove('incorrect');
-                [cite_start]}, 1000); [cite: 131]
+                }, 1000);
             }
         }
 
         function updateScore() {
             const scoreElement = document.getElementById('score');
-            [cite_start]scoreElement.textContent = score; [cite: 133]
-            [cite_start]scoreElement.classList.add('score-animation'); [cite: 133]
+            scoreElement.textContent = score;
+            scoreElement.classList.add('score-animation');
             
             setTimeout(() => {
                 scoreElement.classList.remove('score-animation');
-            [cite_start]}, 800); [cite: 134]
+            }, 800);
         }
 
         function updateProgress() {
-            [cite_start]document.getElementById('total').textContent = `${correctAnswers}/${totalQuestions}`; [cite: 134]
+            document.getElementById('total').textContent = `${correctAnswers}/${totalQuestions}`;
         }
 
         function resetGame() {
-            [cite_start]score = 0; [cite: 135]
-            [cite_start]correctAnswers = 0; [cite: 136]
-            [cite_start]usedItems.clear(); [cite: 136]
-            [cite_start]gameStartTime = new Date(); [cite: 136]
+            score = 0;
+            correctAnswers = 0;
+            usedItems.clear();
+            gameStartTime = new Date();
             
-            [cite_start]updateScore(); [cite: 136]
-            [cite_start]updateProgress(); [cite: 136]
-
-            // Reset all drop zones
-            [cite_start]const dropZones = document.querySelectorAll('.drop-zone'); [cite: 137]
-            [cite_start]dropZones.forEach(zone => { [cite: 138]
-                [cite_start]zone.classList.remove('correct', 'incorrect'); [cite: 138]
-                const zoneData = materials[currentCategory].zones.find(z => z.id === zone.dataset.zoneId);
-                if (zoneData) {
-                    zone.innerHTML = `
-                        [cite_start]<h3 class="text-lg font-bold text-gray-800 mb-2">${zoneData.name}</h3> [cite: 139]
-                        <p class="text-sm text-gray-600 mb-4">${zoneData.description}</p>
-                        <div class="text-4xl text-gray-300">📋</div>
-                    `;
-                }
-            [cite_start]}); [cite: 140]
-
-            // Reset all drag items
-            [cite_start]const dragItems = document.querySelectorAll('.drag-item'); [cite: 141]
-            [cite_start]dragItems.forEach(item => { [cite: 142]
-                item.style.opacity = '1';
-                item.draggable = true;
-                item.style.pointerEvents = 'auto';
-            [cite_start]}); [cite: 142]
+            updateScore();
+            // Muat ulang kategori saat ini
+            loadCategory(currentCategory); 
         }
 
         function showSuccessModal() {
             document.getElementById('final-score').textContent = score;
-            [cite_start]document.getElementById('success-modal').classList.remove('hidden'); [cite: 144]
+            document.getElementById('success-modal').classList.remove('hidden');
         }
 
         function closeSuccessModal() {
-            [cite_start]document.getElementById('success-modal').classList.add('hidden'); [cite: 144]
+            document.getElementById('success-modal').classList.add('hidden');
         }
 
         // Close modal when clicking outside
@@ -576,7 +567,7 @@
             if (e.target === this) {
                 closeSuccessModal();
             }
-        [cite_start]}); [cite: 145]
+        });
     </script>
 </body>
 </html>
