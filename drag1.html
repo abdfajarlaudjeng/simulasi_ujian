@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UJIAN UTS INFORMATIKA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+[cite_start][cite: 1] }
+        
+        .drag-item {
+            cursor: grab;
+[cite_start][cite: 2] transition: all 0.3s ease;
+            user-select: none;
+        }
+        
+        .drag-item:hover {
+            transform: translateY(-3px) scale(1.05);
+[cite_start][cite: 3] box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        .drag-item.dragging {
+            opacity: 0.6;
+[cite_start][cite: 4] transform: rotate(5deg) scale(1.1);
+            z-index: 1000;
+        }
+        
+        .drop-zone {
+            min-height: 120px;
+[cite_start][cite: 5] border: 3px dashed #d1d5db;
+            transition: all 0.3s ease;
+            position: relative;
+[cite_start][cite: 6] }
+        
+        .drop-zone.drag-over {
+            border-color: #10b981;
+[cite_start][cite: 7] background-color: #ecfdf5;
+            border-style: solid;
+            transform: scale(1.02);
+        }
+        
+        .drop-zone.correct {
+            border-color: #10b981;
+[cite_start][cite: 8] background-color: #d1fae5;
+            animation: correctPulse 0.6s ease-out;
+        }
+        
+        .drop-zone.incorrect {
+            border-color: #ef4444;
+[cite_start][cite: 9] background-color: #fee2e2;
+            animation: shake 0.5s ease-out;
+        }
+        
+        @keyframes correctPulse {
+            0% { transform: scale(1);
+[cite_start][cite: 10] }
+            50% { transform: scale(1.05);
+[cite_start][cite: 11] }
+            100% { transform: scale(1);
+[cite_start][cite: 12] }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0);
+[cite_start][cite: 13] }
+            25% { transform: translateX(-5px);
+[cite_start][cite: 14] }
+            75% { transform: translateX(5px);
+[cite_start][cite: 15] }
+        }
+        
+        .item-icon {
+            font-size: 3rem;
+[cite_start][cite: 16] margin-bottom: 0.5rem;
+        }
+        
+        .score-animation {
+            animation: scoreUp 0.8s ease-out;
+[cite_start][cite: 17] }
+        
+        @keyframes scoreUp {
+            0% { transform: scale(1);
+[cite_start][cite: 18] }
+            50% { transform: scale(1.2); color: #10b981;
+[cite_start][cite: 19] }
+            100% { transform: scale(1);
+[cite_start][cite: 20] }
+        }
+
+        .game-area {
+            display: none;
+[cite_start][cite: 21] }
+
+        .game-area.active {
+            display: block;
+[cite_start][cite: 22] }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-4">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">🖥️ Belajar Informatika SMP</h1>
+            <p class="text-lg text-gray-600">Drag gambar ke kotak yang sesuai untuk belajar!</p>
+        </div>
+
+        [cite_start]<div id="student-form" class="bg-white rounded-xl shadow-lg p-6 mb-6"> [cite: 24]
+            [cite_start]<h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">📝 Data Siswa</h2> [cite: 24]
+            <div class="grid md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Lengkap</label>
+                    <input type="text" id="student-name" placeholder="Masukkan nama lengkap" 
+                           [cite_start]class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"> [cite: 25]
+                </div>
+                <div>
+                    [cite_start]<label class="block text-sm font-semibold text-gray-700 mb-2">NISN</label> [cite: 26]
+                    <input type="text" id="student-nisn" placeholder="Masukkan NISN" 
+                           [cite_start]class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"> [cite: 26]
+                </div>
+                <div>
+                    [cite_start]<label class="block text-sm font-semibold text-gray-700 mb-2">Kelas</label> [cite: 27]
+                    [cite_start]<select id="student-class" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"> [cite: 27]
+                        <option value="">Pilih Kelas</option>
+                        <option value="VII">VII</option>   
+                        <option value="VIII">VIII</option>                        
+                        <option value="IX">IX</option>     
+                    [cite_start]</select> [cite: 27, 28, 29]
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <button onclick="saveStudentData()" 
+                         [cite_start]class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors"> [cite: 30]
+                    💾 Simpan Data & Mulai Belajar
+                </button>
+            </div>
+            [cite_start]<div id="student-info" class="hidden mt-4 p-4 bg-blue-50 rounded-lg"> [cite: 30, 31]
+                <p class="text-center text-blue-800">
+                    <strong>Selamat belajar, <span id="display-name"></span>!</strong><br>
+                    <small>Kelas: <span id="display-class"></span> |
+ NISN: <span id="display-nisn"></span></small>
+                [cite_start]</p> [cite: 31, 32]
+            </div>
+        </div>
+
+        [cite_start]<div id="game-area" class="game-area"> [cite: 33]
+            <div id="loading-overlay" class="text-center p-10 hidden">
+                <p class="text-lg font-semibold text-blue-700">🚀 Memuat materi dari server, mohon tunggu...</p>
+            </div>
+
+            <div id="game-content" class="hidden">
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    [cite_start]<div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0"> [cite: 33]
+                        <div class="flex items-center space-x-4">
+                            <label class="text-lg font-semibold text-gray-700">Pilih Materi:</label>
+                            <select id="category-select" onchange="changeCategory()" 
+                                    [cite_start]class="bg-blue-50 border-2 border-blue-200 rounded-lg px-4 py-2 text-lg font-medium focus:outline-none focus:border-blue-500"> [cite: 34]
+                                <option value="hardware">🔧 Hardware Komputer</option>
+                                <option value="software">💿 Software Komputer</option>
+                                [cite_start]<option value="network">🌐 Jaringan Komputer</option> [cite: 35]
+                                <option value="algorithm">🧮 Algoritma & Pemrograman</option>
+                            </select>
+                        </div>
+                        
+                        [cite_start]<div class="flex items-center space-x-4"> [cite: 36]
+                            <div class="text-center">
+                                [cite_start]<div class="text-2xl font-bold text-green-600" id="score">0</div> [cite: 37]
+                                <div class="text-sm text-gray-600">Skor</div>
+                            </div>
+                            <div class="text-center">
+                                [cite_start]<div class="text-2xl font-bold text-blue-600" id="total">0/0</div> [cite: 38]
+                                <div class="text-sm text-gray-600">Progress</div>
+                            </div>
+                            <button onclick="resetGame()" 
+                                    [cite_start]class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors"> [cite: 39]
+                                🔄 Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-4">
+                        [cite_start]<div class="bg-white rounded-xl shadow-lg p-6"> [cite: 41]
+                            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                                <span id="items-title">🔧 Komponen Hardware</span>
+                            </h2>
+                            [cite_start]<div id="drag-items" class="grid grid-cols-2 gap-4"> [cite: 42]
+                                </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-8">
+                        [cite_start]<div class="bg-white rounded-xl shadow-lg p-6"> [cite: 44]
+                            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                                <span id="zones-title">🎯 Cocokkan dengan Kategori</span>
+                            </h2>
+                            [cite_start]<div id="drop-zones" class="grid md:grid-cols-2 gap-6"> [cite: 45]
+                                </div>
+                        </div>
+                    </div>
+                </div>
+
+                [cite_start]<div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg"> [cite: 46]
+                    <div class="flex items-start space-x-3">
+                        [cite_start]<div class="text-2xl">💡</div> [cite: 47]
+                        <div>
+                            <h3 class="font-bold text-blue-800 mb-2">Cara Bermain:</h3>
+                            <ol class="text-blue-700 space-y-1">
+                                <li>1. [cite_start]Pilih kategori materi dari dropdown di atas</li> [cite: 48, 49]
+                                <li>2. [cite_start]Drag gambar dari panel kiri ke kotak yang sesuai di kanan</li> [cite: 50]
+                                <li>3. [cite_start]Kotak akan berubah hijau jika benar, merah jika salah</li> [cite: 51]
+                                <li>4. [cite_start]Kumpulkan skor sebanyak-banyaknya!</li> [cite: 52]
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div> </div>
+    </div>
+
+    [cite_start]<div id="success-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center"> [cite: 53]
+        <div class="bg-white rounded-2xl p-8 max-w-md mx-4 text-center">
+            <div class="text-6xl mb-4">🎉</div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Selamat!</h3>
+            <p class="text-gray-600 mb-6">Kamu berhasil menyelesaikan semua soal dengan skor <span id="final-score" class="font-bold text-green-600"></span>!</p>
+            <div class="flex space-x-3 justify-center">
+                [cite_start]<button onclick="closeSuccessModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded-lg"> [cite: 54]
+                    Tutup
+                </button>
+                <button onclick="resetGame(); closeSuccessModal();"
+ [cite_start]class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg"> [cite: 55]
+                    Main Lagi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // -----------------------------------------------------------------
+        // !! PENTING: GANTI DENGAN URL WEB APP ANDA DARI GOOGLE APPS SCRIPT !!
+        // -----------------------------------------------------------------
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyNZmiDlbk3hbTqcbrgggEFWi4wXpRbV-oiD1D542snYLYw6-jSuD8gRfy4q8Os2F0KkA/exec";
+        // -----------------------------------------------------------------
+
+        [cite_start]let currentCategory = 'hardware'; [cite: 55]
+        [cite_start]let score = 0; [cite: 56]
+        [cite_start]let correctAnswers = 0; [cite: 56]
+        [cite_start]let totalQuestions = 0; [cite: 56]
+        [cite_start]let usedItems = new Set(); [cite: 56]
+        [cite_start]let studentData = null; [cite: 57]
+        [cite_start]let gameStartTime = null; [cite: 57]
+
+        // Variabel global untuk menyimpan materi dari Google Sheet
+        let materials = {};
+
+        // --- FUNGSI BARU: Menggantikan saveStudentData() yang lama ---
+        function saveStudentData() {
+            [cite_start]const name = document.getElementById('student-name').value.trim(); [cite: 86]
+            [cite_start]const nisn = document.getElementById('student-nisn').value.trim(); [cite: 87]
+            [cite_start]const studentClass = document.getElementById('student-class').value; [cite: 87]
+
+            if (!name || !nisn || !studentClass) {
+                alert('Mohon lengkapi semua data siswa!');
+                [cite_start]return; [cite: 88]
+            }
+
+            studentData = {
+                name: name,
+                nisn: nisn,
+                class: studentClass,
+                timestamp: new Date().toISOString()
+            [cite_start]}; [cite: 88]
+
+            // Tampilkan info siswa
+            [cite_start]document.getElementById('display-name').textContent = name; [cite: 89]
+            [cite_start]document.getElementById('display-class').textContent = studentClass; [cite: 90]
+            [cite_start]document.getElementById('display-nisn').textContent = nisn; [cite: 90]
+            [cite_start]document.getElementById('student-info').classList.remove('hidden'); [cite: 90]
+
+            // Dapatkan elemen UI Game
+            const gameArea = document.getElementById('game-area');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const gameContent = document.getElementById('game-content');
+
+            // Tampilkan game area dan loading
+            [cite_start]gameArea.classList.add('active'); [cite: 91]
+            loadingOverlay.classList.remove('hidden');
+            gameContent.classList.add('hidden');
+            [cite_start]gameArea.scrollIntoView({ behavior: 'smooth' }); [cite: 93]
+
+            // Ambil materi dari Google Sheet
+            fetch(SCRIPT_URL, { method: 'GET' })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        materials = result.data; // Simpan materi secara global
+                        [cite_start]gameStartTime = new Date(); [cite: 91]
+                        loadCategory(currentCategory); [cite_start]// Muat kategori pertama [cite: 91]
+                        
+                        // Sembunyikan loading dan tampilkan game
+                        loadingOverlay.classList.add('hidden');
+                        gameContent.classList.remove('hidden');
+                    } else {
+                        // Tampilkan error jika gagal memuat
+                        loadingOverlay.innerHTML = `<p class="text-red-500 font-bold p-10">Gagal memuat materi: ${result.message}</p>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch Error:', error);
+                    loadingOverlay.innerHTML = `<p class="text-red-500 font-bold p-10">Error: Tidak dapat terhubung ke server. Pastikan URL SCRIPT_URL sudah benar.</p>`;
+                });
+        }
+
+        // --- FUNGSI BARU: Menggantikan saveGameResult() yang lama ---
+        function saveGameResult() {
+            [cite_start]if (!studentData) return; [cite: 97]
+            
+            const accuracy = (totalQuestions > 0) ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+            const duration = Math.round((new Date() - gameStartTime) / 1000); // dalam detik
+
+            const gameResult = {
+                name: studentData.name,
+                nisn: studentData.nisn,
+                class: studentData.class,
+                category: currentCategory,
+                score: score,
+                correctAnswers: correctAnswers,
+                totalQuestions: totalQuestions,
+                accuracy: accuracy,
+                duration: duration
+            [cite_start]}; [cite: 98, 99]
+
+            [cite_start]console.log('Mengirim hasil:', gameResult); [cite: 100]
+            
+            // Kirim data ke Google Sheets
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain;charset=utf-8', // Gunakan text/plain agar lebih aman dari CORS
+                },
+                body: JSON.stringify(gameResult) // Kirim sebagai string
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    console.log('Hasil berhasil dikirim ke Google Sheets.');
+                } else {
+                    console.error('Gagal mengirim hasil:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error saat mengirim hasil:', error);
+            });
+        }
+
+        // -------------------------------------------------------------
+        // TIDAK ADA PERUBAHAN PADA FUNGSI-FUNGSI DI BAWAH INI
+        // (Fungsi-fungsi ini sudah dinamis dan akan bekerja dengan
+        //  variabel 'materials' yang baru)
+        // -------------------------------------------------------------
+
+        function changeCategory() {
+            const select = document.getElementById('category-select');
+            [cite_start]currentCategory = select.value; [cite: 101]
+            resetGame();
+            [cite_start]loadCategory(currentCategory); [cite: 101]
+        }
+
+        function loadCategory(category) {
+            const material = materials[category];
+            [cite_start]totalQuestions = material.items.length; [cite: 102]
+            
+            // Update titles
+            document.getElementById('items-title').textContent = material.title;
+            [cite_start]document.getElementById('zones-title').textContent = '🎯 Cocokkan dengan Kategori'; [cite: 44]
+
+            // Load drag items
+            [cite_start]loadDragItems(material.items); [cite: 103]
+            // Load drop zones
+            [cite_start]loadDropZones(material.zones); [cite: 104]
+            
+            [cite_start]updateProgress(); [cite: 105]
+        }
+
+        function loadDragItems(items) {
+            const container = document.getElementById('drag-items');
+            [cite_start]container.innerHTML = ''; [cite: 106]
+            
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'drag-item bg-gradient-to-br from-blue-100 to-blue-200 p-4 rounded-xl border-2 border-blue-300 text-center cursor-grab hover:shadow-lg';
+                div.draggable = true;
+                div.dataset.itemId = item.id;
+                [cite_start]div.dataset.target = item.target; [cite: 107]
+                
+                div.innerHTML = `
+                    <div class="item-icon">${item.icon}</div>
+                    <div class="font-semibold text-gray-800 text-sm">${item.name}</div>
+                [cite_start]`; [cite: 108]
+                
+                div.addEventListener('dragstart', handleDragStart);
+                div.addEventListener('dragend', handleDragEnd);
+                
+                container.appendChild(div);
+            [cite_start]}); [cite: 109]
+        }
+
+        function loadDropZones(zones) {
+            const container = document.getElementById('drop-zones');
+            [cite_start]container.innerHTML = ''; [cite: 110]
+            
+            zones.forEach(zone => {
+                const div = document.createElement('div');
+                [cite_start]div.className = 'drop-zone bg-gray-50 rounded-xl p-6 text-center'; [cite: 6]
+                div.dataset.zoneId = zone.id;
+                
+                div.innerHTML = `
+                    [cite_start]<h3 class="text-lg font-bold text-gray-800 mb-2">${zone.name}</h3> [cite: 111]
+                    <p class="text-sm text-gray-600 mb-4">${zone.description}</p>
+                    <div class="text-4xl text-gray-300">📋</div>
+                `;
+                
+                [cite_start]div.addEventListener('dragover', handleDragOver); [cite: 112]
+                [cite_start]div.addEventListener('drop', handleDrop); [cite: 112]
+                [cite_start]div.addEventListener('dragenter', handleDragEnter); [cite: 112]
+                [cite_start]div.addEventListener('dragleave', handleDragLeave); [cite: 112]
+                
+                container.appendChild(div);
+            [cite_start]}); [cite: 113]
+        }
+
+        function handleDragStart(e) {
+            [cite_start]const itemId = e.target.dataset.itemId; [cite: 114]
+            [cite_start]const target = e.target.dataset.target; [cite: 115]
+            
+            e.dataTransfer.setData('text/plain', JSON.stringify({ itemId, target }));
+            [cite_start]e.target.classList.add('dragging'); [cite: 115]
+        }
+
+        function handleDragEnd(e) {
+            [cite_start]e.target.classList.remove('dragging'); [cite: 116]
+        }
+
+        function handleDragOver(e) {
+            [cite_start]e.preventDefault(); [cite: 117]
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            [cite_start]e.currentTarget.classList.add('drag-over'); [cite: 119]
+        }
+
+        function handleDragLeave(e) {
+            if (!e.currentTarget.contains(e.relatedTarget)) {
+                [cite_start]e.currentTarget.classList.remove('drag-over'); [cite: 120]
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            [cite_start]e.currentTarget.classList.remove('drag-over'); [cite: 121]
+            
+            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+            const zoneId = e.currentTarget.dataset.zoneId;
+            
+            // Check if item already used
+            if (usedItems.has(data.itemId)) {
+                [cite_start]return; [cite: 122]
+            }
+            
+            // Check if correct
+            if (data.target === zoneId) {
+                // Correct answer
+                [cite_start]e.currentTarget.classList.add('correct'); [cite: 122]
+                e.currentTarget.innerHTML = `
+                    <h3 class="text-lg font-bold text-green-800 mb-2">✅ Benar!</h3>
+                    <p class="text-sm text-green-600 mb-4">Jawaban tepat!</p>
+                    <div class="text-4xl text-green-500">✅</div>
+                [cite_start]`; [cite: 123]
+                [cite_start]score += 10; [cite: 124]
+                [cite_start]correctAnswers++; [cite: 124]
+                [cite_start]usedItems.add(data.itemId); [cite: 124]
+                
+                // Remove the dragged item
+                const draggedItem = document.querySelector(`[data-item-id="${data.itemId}"]`);
+                [cite_start]if (draggedItem) { [cite: 125]
+                    draggedItem.style.opacity = '0.3';
+                    [cite_start]draggedItem.draggable = false; [cite: 126]
+                    [cite_start]draggedItem.style.pointerEvents = 'none'; [cite: 126]
+                }
+                
+                [cite_start]updateScore(); [cite: 126]
+                [cite_start]updateProgress(); [cite: 127]
+                
+                // Check if game completed
+                if (correctAnswers === totalQuestions) {
+                    setTimeout(() => {
+                        saveGameResult(); // Kirim hasil ke Google Sheet
+                        showSuccessModal();
+                    [cite_start]}, 1000); [cite: 128]
+                }
+                
+                setTimeout(() => {
+                    e.currentTarget.classList.remove('correct');
+                [cite_start]}, 2000); [cite: 129]
+            } else {
+                // Incorrect answer
+                [cite_start]e.currentTarget.classList.add('incorrect'); [cite: 130]
+                setTimeout(() => {
+                    e.currentTarget.classList.remove('incorrect');
+                [cite_start]}, 1000); [cite: 131]
+            }
+        }
+
+        function updateScore() {
+            const scoreElement = document.getElementById('score');
+            [cite_start]scoreElement.textContent = score; [cite: 133]
+            [cite_start]scoreElement.classList.add('score-animation'); [cite: 133]
+            
+            setTimeout(() => {
+                scoreElement.classList.remove('score-animation');
+            [cite_start]}, 800); [cite: 134]
+        }
+
+        function updateProgress() {
+            [cite_start]document.getElementById('total').textContent = `${correctAnswers}/${totalQuestions}`; [cite: 134]
+        }
+
+        function resetGame() {
+            [cite_start]score = 0; [cite: 135]
+            [cite_start]correctAnswers = 0; [cite: 136]
+            [cite_start]usedItems.clear(); [cite: 136]
+            [cite_start]gameStartTime = new Date(); [cite: 136]
+            
+            [cite_start]updateScore(); [cite: 136]
+            [cite_start]updateProgress(); [cite: 136]
+
+            // Reset all drop zones
+            [cite_start]const dropZones = document.querySelectorAll('.drop-zone'); [cite: 137]
+            [cite_start]dropZones.forEach(zone => { [cite: 138]
+                [cite_start]zone.classList.remove('correct', 'incorrect'); [cite: 138]
+                const zoneData = materials[currentCategory].zones.find(z => z.id === zone.dataset.zoneId);
+                if (zoneData) {
+                    zone.innerHTML = `
+                        [cite_start]<h3 class="text-lg font-bold text-gray-800 mb-2">${zoneData.name}</h3> [cite: 139]
+                        <p class="text-sm text-gray-600 mb-4">${zoneData.description}</p>
+                        <div class="text-4xl text-gray-300">📋</div>
+                    `;
+                }
+            [cite_start]}); [cite: 140]
+
+            // Reset all drag items
+            [cite_start]const dragItems = document.querySelectorAll('.drag-item'); [cite: 141]
+            [cite_start]dragItems.forEach(item => { [cite: 142]
+                item.style.opacity = '1';
+                item.draggable = true;
+                item.style.pointerEvents = 'auto';
+            [cite_start]}); [cite: 142]
+        }
+
+        function showSuccessModal() {
+            document.getElementById('final-score').textContent = score;
+            [cite_start]document.getElementById('success-modal').classList.remove('hidden'); [cite: 144]
+        }
+
+        function closeSuccessModal() {
+            [cite_start]document.getElementById('success-modal').classList.add('hidden'); [cite: 144]
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('success-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSuccessModal();
+            }
+        [cite_start]}); [cite: 145]
+    </script>
+</body>
+</html>
