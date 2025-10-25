@@ -8,98 +8,98 @@
     <style>
         body {
             box-sizing: border-box;
-[cite_start][cite: 1] }
+ }
         
         .drag-item {
             cursor: grab;
-[cite_start][cite: 2] transition: all 0.3s ease;
+ transition: all 0.3s ease;
             user-select: none;
         }
         
         .drag-item:hover {
             transform: translateY(-3px) scale(1.05);
-[cite_start][cite: 3] box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+ box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
         
         .drag-item.dragging {
             opacity: 0.6;
-[cite_start][cite: 4] transform: rotate(5deg) scale(1.1);
+ transform: rotate(5deg) scale(1.1);
             z-index: 1000;
         }
         
         .drop-zone {
             min-height: 120px;
-[cite_start][cite: 5] border: 3px dashed #d1d5db;
+ border: 3px dashed #d1d5db;
             transition: all 0.3s ease;
             position: relative;
-[cite_start][cite: 6] }
+ }
         
         .drop-zone.drag-over {
             border-color: #10b981;
-[cite_start][cite: 7] background-color: #ecfdf5;
+ background-color: #ecfdf5;
             border-style: solid;
             transform: scale(1.02);
         }
         
         .drop-zone.correct {
             border-color: #10b981;
-[cite_start][cite: 8] background-color: #d1fae5;
+ background-color: #d1fae5;
             animation: correctPulse 0.6s ease-out;
         }
         
         .drop-zone.incorrect {
             border-color: #ef4444;
-[cite_start][cite: 9] background-color: #fee2e2;
+ background-color: #fee2e2;
             animation: shake 0.5s ease-out;
         }
         
         @keyframes correctPulse {
             0% { transform: scale(1);
-[cite_start][cite: 10] }
+ }
             50% { transform: scale(1.05);
-[cite_start][cite: 11] }
+ }
             100% { transform: scale(1);
-[cite_start][cite: 12] }
+ }
         }
         
         @keyframes shake {
             0%, 100% { transform: translateX(0);
-[cite_start][cite: 13] }
+ }
             25% { transform: translateX(-5px);
-[cite_start][cite: 14] }
+ }
             75% { transform: translateX(5px);
-[cite_start][cite: 15] }
+ }
         }
         
         .item-icon {
             font-size: 3rem;
-[cite_start][cite: 16] margin-bottom: 0.5rem;
+ margin-bottom: 0.5rem;
         }
         
         .score-animation {
             animation: scoreUp 0.8s ease-out;
-[cite_start][cite: 17] }
+ }
         
         @keyframes scoreUp {
             0% { transform: scale(1);
-[cite_start][cite: 18] }
+ }
             50% { transform: scale(1.2); color: #10b981;
-[cite_start][cite: 19] }
+ }
             100% { transform: scale(1);
-[cite_start][cite: 20] }
+ }
         }
 
         .game-area {
             display: none;
-[cite_start][cite: 21] }
+ }
 
         .game-area.active {
             display: block;
-[cite_start][cite: 22] }
+ }
 
         .hidden {
             display: none;
-        }
+ }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-4">
@@ -109,130 +109,162 @@
             <p class="text-lg text-gray-600">Drag gambar ke kotak yang sesuai untuk belajar!</p>
         </div>
 
-        [cite_start]<div id="student-form" class="bg-white rounded-xl shadow-lg p-6 mb-6"> [cite: 24]
-            [cite_start]<h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">📝 Data Siswa</h2> [cite: 24]
+        <div id="student-form" class="bg-white rounded-xl shadow-lg p-6 mb-6"> 
+           
+ <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">📝 Data Siswa</h2> 
             <div class="grid md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Lengkap</label>
                     <input type="text" id="student-name" placeholder="Masukkan nama lengkap" 
-                           [cite_start]class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"> [cite: 25]
+       
+                     class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"> 
                 </div>
                 <div>
-                    [cite_start]<label class="block text-sm font-semibold text-gray-700 mb-2">NISN</label> [cite: 26]
-                    <input type="text" id="student-nisn" placeholder="Masukkan NISN" 
-                           [cite_start]class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"> [cite: 26]
+ <label class="block text-sm font-semibold text-gray-700 mb-2">NISN</label> 
+            
+         <input type="text" id="student-nisn" placeholder="Masukkan NISN" 
+                           class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"> 
                 </div>
                 <div>
-                    [cite_start]<label class="block text-sm font-semibold text-gray-700 mb-2">Kelas</label> [cite: 27]
-                    [cite_start]<select id="student-class" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"> [cite: 27]
+                   
+ <label class="block text-sm font-semibold text-gray-700 mb-2">Kelas</label> 
+ <select id="student-class" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"> 
                         <option value="">Pilih Kelas</option>
                         <option value="VII">VII</option>   
-                        <option value="VIII">VIII</option>                        
+       
+                 <option value="VIII">VIII</option>                        
                         <option value="IX">IX</option>     
-                    [cite_start]</select> [cite: 27, 28, 29]
-                </div>
+ </select> 
+    
+             </div>
             </div>
             <div class="text-center mt-4">
                 <button onclick="saveStudentData()" 
-                         [cite_start]class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors"> [cite: 30]
-                    💾 Simpan Data & Mulai Belajar
+                         class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors"> 
+          
+           💾 Simpan Data & Mulai Belajar
                 </button>
             </div>
-            [cite_start]<div id="student-info" class="hidden mt-4 p-4 bg-blue-50 rounded-lg"> [cite: 30, 31]
+ <div id="student-info" class="hidden mt-4 p-4 bg-blue-50 rounded-lg"> 
                 <p class="text-center text-blue-800">
-                    <strong>Selamat belajar, <span id="display-name"></span>!</strong><br>
+                  
+   <strong>Selamat belajar, <span id="display-name"></span>!</strong><br>
                     <small>Kelas: <span id="display-class"></span> |
  NISN: <span id="display-nisn"></span></small>
-                [cite_start]</p> [cite: 31, 32]
+ </p> 
             </div>
         </div>
 
-        [cite_start]<div id="game-area" class="game-area"> [cite: 33]
+ <div id="game-area" class="game-area"> 
             <div id="loading-overlay" class="text-center p-10 hidden">
                 <p class="text-lg font-semibold text-blue-700">🚀 Memuat materi dari server, mohon tunggu...</p>
-            </div>
+      
+       </div>
 
             <div id="game-content" class="hidden">
                 <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-                    [cite_start]<div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0"> [cite: 33]
+ <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0"> 
                         <div class="flex items-center space-x-4">
-                            <label class="text-lg font-semibold text-gray-700">Pilih Materi:</label>
+   
+                         <label class="text-lg font-semibold text-gray-700">Pilih Materi:</label>
                             <select id="category-select" onchange="changeCategory()" 
-                                    [cite_start]class="bg-blue-50 border-2 border-blue-200 rounded-lg px-4 py-2 text-lg font-medium focus:outline-none focus:border-blue-500"> [cite: 34]
+                                    class="bg-blue-50 border-2 border-blue-200 rounded-lg 
+ px-4 py-2 text-lg font-medium focus:outline-none focus:border-blue-500"> 
                                 <option value="hardware">🔧 Hardware Komputer</option>
                                 <option value="software">💿 Software Komputer</option>
-                                [cite_start]<option value="network">🌐 Jaringan Komputer</option> [cite: 35]
+                       
+ <option value="network">🌐 Jaringan Komputer</option> 
                                 <option value="algorithm">🧮 Algoritma & Pemrograman</option>
                             </select>
-                        </div>
+                      
+   </div>
                         
-                        [cite_start]<div class="flex items-center space-x-4"> [cite: 36]
+ <div class="flex items-center space-x-4"> 
                             <div class="text-center">
-                                [cite_start]<div class="text-2xl font-bold text-green-600" id="score">0</div> [cite: 37]
+                
+ <div class="text-2xl font-bold text-green-600" id="score">0</div> 
                                 <div class="text-sm text-gray-600">Skor</div>
                             </div>
-                            <div class="text-center">
-                                [cite_start]<div class="text-2xl font-bold text-blue-600" id="total">0/0</div> [cite: 38]
+                
+             <div class="text-center">
+ <div class="text-2xl font-bold text-blue-600" id="total">0/0</div> 
                                 <div class="text-sm text-gray-600">Progress</div>
-                            </div>
+               
+             </div>
                             <button onclick="resetGame()" 
-                                    [cite_start]class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors"> [cite: 39]
-                                🔄 Reset
+                                    class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors"> 
+            
+                     🔄 Reset
                             </button>
                         </div>
                     </div>
-                </div>
+       
+                 </div>
 
                 <div class="grid lg:grid-cols-12 gap-6">
                     <div class="lg:col-span-4">
-                        [cite_start]<div class="bg-white rounded-xl shadow-lg p-6"> [cite: 41]
-                            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+ <div class="bg-white rounded-xl shadow-lg p-6"> 
+                     
+           <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
                                 <span id="items-title">🔧 Komponen Hardware</span>
                             </h2>
-                            [cite_start]<div id="drag-items" class="grid grid-cols-2 gap-4"> [cite: 42]
+                         
+ <div id="drag-items" class="grid grid-cols-2 gap-4"> 
                                 </div>
                         </div>
                     </div>
 
-                    <div class="lg:col-span-8">
-                        [cite_start]<div class="bg-white rounded-xl shadow-lg p-6"> [cite: 44]
+               
+     <div class="lg:col-span-8">
+ <div class="bg-white rounded-xl shadow-lg p-6"> 
                             <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
-                                <span id="zones-title">🎯 Cocokkan dengan Kategori</span>
+                               
+ <span id="zones-title">🎯 Cocokkan dengan Kategori</span>
                             </h2>
-                            [cite_start]<div id="drop-zones" class="grid md:grid-cols-2 gap-6"> [cite: 45]
+ <div id="drop-zones" class="grid md:grid-cols-2 gap-6"> 
                                 </div>
+ 
                         </div>
                     </div>
                 </div>
 
-                [cite_start]<div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg"> [cite: 46]
-                    <div class="flex items-start space-x-3">
-                        [cite_start]<div class="text-2xl">💡</div> [cite: 47]
+ <div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg"> 
+                 
+   <div class="flex items-start space-x-3">
+ <div class="text-2xl">💡</div> 
                         <div>
                             <h3 class="font-bold text-blue-800 mb-2">Cara Bermain:</h3>
-                            <ol class="text-blue-700 space-y-1">
-                                <li>1. [cite_start]Pilih kategori materi dari dropdown di atas</li> [cite: 48, 49]
-                                <li>2. [cite_start]Drag gambar dari panel kiri ke kotak yang sesuai di kanan</li> [cite: 50]
-                                <li>3. [cite_start]Kotak akan berubah hijau jika benar, merah jika salah</li> [cite: 51]
-                                <li>4. [cite_start]Kumpulkan skor sebanyak-banyaknya!</li> [cite: 52]
+           
+                 <ol class="text-blue-700 space-y-1">
+                                <li>1.
+ Pilih kategori materi dari dropdown di atas</li> 
+                                <li>2.
+ Drag gambar dari panel kiri ke kotak yang sesuai di kanan</li> 
+                                <li>3.
+ Kotak akan berubah hijau jika benar, merah jika salah</li> 
+                                <li>4.
+ Kumpulkan skor sebanyak-banyaknya!</li> 
                             </ol>
                         </div>
                     </div>
                 </div>
-            </div> </div>
+        
+     </div> </div>
     </div>
 
-    [cite_start]<div id="success-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center"> [cite: 53]
+ <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center"> 
         <div class="bg-white rounded-2xl p-8 max-w-md mx-4 text-center">
             <div class="text-6xl mb-4">🎉</div>
             <h3 class="text-2xl font-bold text-gray-800 mb-4">Selamat!</h3>
             <p class="text-gray-600 mb-6">Kamu berhasil menyelesaikan semua soal dengan skor <span id="final-score" class="font-bold text-green-600"></span>!</p>
-            <div class="flex space-x-3 justify-center">
-                [cite_start]<button onclick="closeSuccessModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded-lg"> [cite: 54]
+       
+     <div class="flex space-x-3 justify-center">
+ <button onclick="closeSuccessModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded-lg"> 
                     Tutup
                 </button>
-                <button onclick="resetGame(); closeSuccessModal();"
- [cite_start]class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg"> [cite: 55]
+                <button onclick="resetGame();
+ closeSuccessModal();"
+ class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg"> 
                     Main Lagi
                 </button>
             </div>
@@ -242,10 +274,10 @@
    <script>
         // -----------------------------------------------------------------
         // !! PENTING: GANTI DENGAN URL WEB APP BARU ANDA !!
+ 
         // -----------------------------------------------------------------
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_rWoVBQv-oTSLKFDccqRb3UW5nc_F4J7uYbS-oH22D5YQaPE9Fh0nrb9MvsvSRDqzVA/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxF4R_6kf1SytXUaIkG_2Dufm2z8gBE4A4mB90NulVUEYDfKyZt9o8fgue7v5bu5wYuDA/exec";
         // -----------------------------------------------------------------
-
         let currentCategory = 'hardware';
         let score = 0;
         let correctAnswers = 0;
@@ -253,45 +285,45 @@
         let usedItems = new Set();
         let studentData = null;
         let gameStartTime = null;
-
+        
         // Variabel global untuk menyimpan materi dari Google Sheet
         let materials = {};
-
+        
         // --- FUNGSI BARU: Menggantikan saveStudentData() yang lama ---
         function saveStudentData() {
             const name = document.getElementById('student-name').value.trim();
             const nisn = document.getElementById('student-nisn').value.trim();
             const studentClass = document.getElementById('student-class').value;
-
+            
             if (!name || !nisn || !studentClass) {
                 alert('Mohon lengkapi semua data siswa!');
                 return;
             }
-
+            
             studentData = {
                 name: name,
                 nisn: nisn,
                 class: studentClass,
                 timestamp: new Date().toISOString()
             };
-
+            
             // Tampilkan info siswa
             document.getElementById('display-name').textContent = name;
             document.getElementById('display-class').textContent = studentClass;
             document.getElementById('display-nisn').textContent = nisn;
             document.getElementById('student-info').classList.remove('hidden');
-
+            
             // Dapatkan elemen UI Game
             const gameArea = document.getElementById('game-area');
             const loadingOverlay = document.getElementById('loading-overlay');
             const gameContent = document.getElementById('game-content');
-
+            
             // Tampilkan game area dan loading
             gameArea.classList.add('active');
             loadingOverlay.classList.remove('hidden');
             gameContent.classList.add('hidden');
             gameArea.scrollIntoView({ behavior: 'smooth' });
-
+            
             // Ambil materi dari Google Sheet
             fetch(SCRIPT_URL, { method: 'GET' })
                 .then(response => response.json())
@@ -314,14 +346,14 @@
                     loadingOverlay.innerHTML = `<p class="text-red-500 font-bold p-10">Error: Tidak dapat terhubung ke server. Pastikan URL SCRIPT_URL sudah benar dan periksa F12 Console.</p>`;
                 });
         }
-
+        
         // --- FUNGSI BARU: Menggantikan saveGameResult() yang lama ---
         function saveGameResult() {
             if (!studentData) return;
             
             const accuracy = (totalQuestions > 0) ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
             const duration = Math.round((new Date() - gameStartTime) / 1000); // dalam detik
-
+            
             const gameResult = {
                 name: studentData.name,
                 nisn: studentData.nisn,
@@ -333,7 +365,7 @@
                 accuracy: accuracy,
                 duration: duration
             };
-
+            
             console.log('Mengirim hasil:', gameResult);
             
             // Kirim data ke Google Sheets
@@ -342,7 +374,7 @@
                 // Mode 'no-cors' seringkali menyebabkan error transparan, lebih baik tangani CORS di server
                 // headers 'text/plain' adalah trik untuk 'simple request'
                 headers: {
-                    'Content-Type': 'text/plain;charset=utf-8', 
+                    'Content-Type': 'text/plain;charset=utf-8',
                 },
                 body: JSON.stringify(gameResult) // Kirim sebagai string
             })
